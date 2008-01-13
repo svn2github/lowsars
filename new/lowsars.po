@@ -1,0 +1,94 @@
+# Chinese/Simplified translation of LowSars
+# Copyright (C) 2007 Lsz
+# This file is distributed under the same license as the LowSars package.
+# lsz <chinatslsz@hotmail.com>, 2007.
+# , fuzzy
+# 
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: LowSars 0.1.2\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-09-30 15:56+0800\n"
+"PO-Revision-Date: 2007-09-30 16:04+0800\n"
+"Last-Translator: lsz <chinatslsz@hotmail.com>\n"
+"Language-Team: Chinese/Simplified <i18n-translation@lists.linux.net.cn>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit"
+
+#: lowsars:10
+msgid "Lightweight OI Wonderful Scoring And Ranking System"
+msgstr "轻量级OI奇妙的评测系统"
+
+#: lowsars:18 lowsars:74
+msgid "-s"
+msgstr "-s"
+
+#: lowsars:67
+msgid "Name "
+msgstr "姓名 "
+
+#: lowsars:90
+msgid "Skipping over"
+msgstr "跳过"
+
+#: lowsars:95
+msgid "Name List"
+msgstr "选手列表"
+
+#: lowsars:99
+msgid "Testing Contestant"
+msgstr "测试选手"
+
+#: lowsars:110
+msgid "Testing Problem"
+msgstr "测试题目"
+
+#: lowsars:119
+msgid "source file not found."
+msgstr "源文件未找到"
+
+#: lowsars:152
+msgid " Score"
+msgstr " 分数"
+
+#: lowsars:157
+msgid "compile error."
+msgstr "编译错误"
+
+#: lowsars:160
+msgid "Score for"
+msgstr "分数"
+
+#: lowsars:166
+msgid "Total Score"
+msgstr "总分"
+
+#: lowsars:183
+msgid "For more ranking please see ranking-<prob> ."
+msgstr "想了解更多排名，请查看ranking-<题目名称>文件"
+
+#: lowsars:184
+msgid "Press ENTER to view the result in OpenOffice or Crtl-C to break..."
+msgstr "按回车在OpenOffice中查看结果，或者按Ctrl-C停止……"
+
+#: lowsars-1p:50
+msgid "Time Limit Exceeded."
+msgstr "超时"
+
+#: lowsars-1p:59
+msgid "Accepted."
+msgstr "答案正确"
+
+#: lowsars-1p:62
+msgid "Wrong Answer."
+msgstr "答案错误"
+
+#: lowsars-1p:64
+msgid "No output file."
+msgstr "无输出文件"
+
+#: lowsars:74
+msgid "Total"
+msgstr "总分"

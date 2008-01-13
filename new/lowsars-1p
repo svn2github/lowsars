@@ -1,0 +1,72 @@
+#!/bin/bash
+# Lowsars single point testing. print 'time score msg' in stdout. e.g.'0.5 10 ac'
+# Usage: ./lszrs-1p (execut.) (stdinf) (stdoutf) (timelimit) (score) (spejudge)
+#调用方法： ./lowsars-1p <可执行文件名> <输入数据文件名> <输出数据文件名> <时间限制>  <分值> <specialjudge文件名>
+# files are not copied before, diff is used if spejudge='-'
+# credit: chinatslsz@hotmail.com
+TEXTDOMAINDIR=/usr/share/locale
+TEXTDOMAIN=lowsars
+export TEXTDOMAIN
+export TEXTDOMAINDIR
+ttt=tttt
+temp=/dev/null #~/soft/lowsars/temp
+null=/dev/null
+prob=`basename $1` ; exe='qwerty' ; aaa=aaaa
+cp $1 ./$exe 1> $null 2> $null
+cp $2 ./$prob.in 1> $null 2> $null
+rm $aaa $ttt 1> $null 2> $null
+( time -p ./$exe & ) 1> $aaa 2> $ttt # this line number is used below!!
+sleep ${4}s
+sleep 0.1s
+pkill -n -x $exe 1> $null 2> $null
+echo aaa $2 >> $temp
+cat $aaa >> $temp
+echo ttt $2 >> $temp
+cat $ttt >> $temp
+read re r2 < $aaa
+if [ "$r2" ] ; then
+   echo --- 0 $re $r2 # pas runerror here. dirty!
+   exit
+fi
+read x b y1 y2 y3 < $ttt
+if [ "$x" != 'real' ] ; then
+  if [ "$y1" = '18:' ] ; then # it's the uglist in the world! See above
+    b=9999
+  elif [ -z "$x" ] ; then
+    b=9988
+  else
+    if [ $y1 ] ; then
+      echo --- 0 RTE: $y3 # c/cpp runerror here. Very dirty!!
+    else 
+      read re < ./$prob.out # dirty too!
+      echo --- 0 RTE:$re $x $b $y1
+    fi
+    exit
+  fi
+fi
+t=`echo "$b > $4" | bc `
+# echo $b $t
+if [ $t '=' '1' ] ; then 
+  echo --- 0 `gettext "Time Limit Exceeded."`
+else
+  if [ -x $6 ] ; then
+    c=`$6 $2 $3 ./$prob.out $5`
+    e=$?
+    if [ ! $e '=' 0 ] ; then
+       c=0 `gettext "Special Judge Error."`
+    fi
+    echo $b $c
+  else
+    c=w
+    diff -q -b ./$prob.out $3 1> $null 2> $null && c=a
+    if [ $c '=' 'a' ] ; then 
+      echo $b $5 `gettext "Accepted."`
+    else 
+      if [ -e ./$prob.out ] ; then
+         echo $b 0 `gettext "Wrong Answer."`
+      else
+        echo $b 0 `gettext "No output file."`
+      fi
+    fi
+  fi
+fi

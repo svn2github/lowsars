@@ -1,0 +1,28 @@
+   problem yhisashax
+     input @.in dict.txt
+     output @.out
+     cases 0 5
+        input @/@#.in @/dict.txt
+        output @/@#.out
+        timelimit 1
+        score 10
+     cases 6 8
+        input @/@#.in @/dict.txt
+        output @/@#.out
+        timelimit 2
+        score 15
+     case 9
+        input @/@#.in @/dict2.txt
+        output @/@#.out
+        timelimit 1
+        score 20
+   problem lszisacow
+      input @.in
+      output @.out
+      cases 0 9
+         input @/@#.in
+         output @/@#.out
+         timelimit 1
+         memory 65536
+         score 10
+   end
