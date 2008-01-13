@@ -1,0 +1,4 @@
+#!/bin/bash
+echo LowSars Installation Script
+echo You may need root pemission to install me.
+cp lowsars lowsars-1p lowsars-st /usr/bin && chmod a+x /usr/bin/lowsars* && echo Intallation done. See readme.html for more infomation.

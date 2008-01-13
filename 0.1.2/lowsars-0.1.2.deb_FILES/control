@@ -1,0 +1,11 @@
+Package: lowsars
+Version: 0.1.2
+Section: devel
+Priority: optional
+Architecture: i386
+Depends: bash, coreutils
+Recommends: gcc, g++, fp-compiler, diff
+Installed-Size: 116565
+Maintainer: Sizhuang Liu <oldherl@gmail.com>
+Description: Command-line programming problem judging program
+

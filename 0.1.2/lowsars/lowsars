@@ -1,0 +1,180 @@
+#!/bin/bash
+# LowSars (pre-alazea) - Lsz's OI Wonderful Scoring And Ranking System
+# Usage: ./lowsars (config file name) [-f] [name_list]
+# credit: chinatslsz@hotmail.com
+# 
+echo "LowSars 0.1.2 - Lsz's OI Wonderful Scoring And Ranking System"
+echo "Copyright 2007 Lsz (chinatslsz@hotmail.com)"
+#cfgfn=$1; shift 1
+opt_f=0
+while [ ! "$1" = '' ]; do
+case $1 in
+    -f) opt_f=1;shift 1;;
+    --) shift 1;break 5;; 
+    -*) echo "error: no such option $1. Please see readme.html";exit 1;;
+    *) if [ "$cfgfn" = '' ] ; then cfgfn=$1; else break 5;fi;shift;;
+esac
+done
+null=/dev/null
+{
+read pn
+prob=0
+while [ $prob -lt $pn ] ; do
+   prob=`expr $prob '+' 1`
+   read probname[$prob]
+   #echo ${probname[$prob]}
+   read spj[$prob]
+   #echo spj[$prob] ${spj[$prob]}
+   read if1[$prob] if2[$prob]
+   read af1[$prob] af2[$prob]
+   read tl[$prob]
+   read ti[$prob]
+   #echo ti[$prob] ${ti[$prob]}
+   if [ ${ti[$prob]} '=' d ] ; then
+      for tc in ${tl[$prob]} ; do
+        read td[$prob,$tc]
+      done
+   fi
+   read sc[$prob]
+   if [ ${sc[$prob]} '=' d ] ; then
+      for tc in ${tl[$prob]} ; do
+        read sd[$prob,$tc]
+      done
+   fi
+   #echo sc[$prob] ${sc[$prob]}
+done
+read xtrf
+} < $cfgfn
+dr=`dirname $cfgfn`
+#shift 1
+#if [ -e $dr/testing/ ] ; then
+#   echo
+#   echo Previous Testing Records Found! They will be COVERed if continue!
+#   echo Press Ctrl-C if you want to stop me from that...
+#   echo Otherwise, press ENTER now.
+#   read uselessenter
+#fi}
+rm -R $dr/testing 2> $null
+mkdir $dr/testing
+mkdir $dr/res 2> $null
+cd $dr/testing
+#echo Test `date` > ../result
+if [ ! -e ../result ] ; then
+   echo -n "Name " > ../result
+   prob=1
+   while [ $prob -le $pn ] ; do
+      echo -n "${probname[$prob]} " >> ../result
+      prob=`expr $prob '+' 1`
+   done 
+   echo "Total" >> ../result
+fi
+ctlist0=$@
+if [ -z "$ctlist0" ] ; then
+   ctlist0=../src/*
+fi
+#echo $ctlist0
+if [ $opt_f = 1 ] ; then
+   ctlist=$ctlist0
+else
+   ctlist=''
+   for ctt in $ctlist0 ; do
+      ct=`basename $ctt`
+      if [ ! -e ../res/$ct.done ] ; then
+         ctlist="$ctlist $ct"
+      else
+         echo Skipping over $ct...
+      fi
+   done
+fi
+echo Name List: $ctlist
+for ctt in $ctlist ; do
+   ct=`basename $ctt`
+   echo
+   echo Testing Contestant $ct ... | tee ../res/$ct
+   #rm ./*
+   #cp ../lowsars-1p ./
+   cp ../data/$xtrf ./ 1> $null 2> $null
+   st=0
+   rs=$ct
+   #echo -n $ct >> ../result
+   prob=1
+   while [ $prob -le $pn ] ; do
+     pb=${probname[$prob]}
+     sp=0
+     echo Testing Problem $pb ... | tee -a ../res/$ct
+     rm ./$pb* 2> $null
+     xx=
+     for x in pas c cpp ; do
+        if [ -e ../src/$ct/$pb.$x ] ; then 
+           xx=$x
+        fi
+     done
+     if [ -z $xx ] ; then
+        echo source file not found. | tee -a ../res/$ct
+     else
+        if [ $xx = pas ] ; then
+           fpc -o./$pb ../src/$ct/$pb.pas > $null 2> $null
+        else
+           if [ $xx = c ] ; then
+             gcc -o ./$pb ../src/$ct/$pb.$xx > $null 2> $null
+           else
+             g++ -o ./$pb ../src/$ct/$pb.$xx > $null 2> $null
+           fi
+        fi
+        if [ -x ./$pb ] ; then
+          ./$pb 1> $null 2> $null
+          for tc in ${tl[$prob]} ; do
+            ifn=${if1[$prob]}$tc${if2[$prob]}
+            afn=${af1[$prob]}$tc${af2[$prob]}
+            if [ ${ti[$prob]} = d ] ; then
+                 til=${td[$prob,$tc]}
+            else
+               til=${ti[$prob]}
+            fi
+            if [ ${sc[$prob]} = d ] ; then
+               sco=${sd[$prob,$tc]}
+            else
+               sco=${sc[$prob]}
+            fi
+            echo -n $ct.$pb.$tc ... | tee -a ../res/$ct
+            spp=${spj[$prob]}
+            #echo $spp
+            #pwd
+            a=`lowsars-1p ./$pb ../data/$ifn ../data/$afn $til $sco ../${spp}`
+            read tii scc msg <<< "$a"
+            sleep 0.1s
+            echo $msg  ${tii}"s  Score:" $scc | tee -a ../res/$ct
+            sp=`echo "$sp + $scc" | bc `
+         done
+         rm ./$pb 2> $null
+       else
+         echo "$pb.$xx compile error."
+       fi
+     fi
+     echo "Score for $ct.$pb : $sp" | tee -a ../res/$ct
+     echo
+     st=`echo "$st + $sp" | bc `
+     rs=$rs" "$sp
+     prob=`expr $prob '+' 1`
+   done
+   echo "$ct Total Score: $st " | tee -a ../res/$ct
+   mv ../res/$ct "../res/$ct.done"
+   echo $rs" "$st >> ../result
+done
+dt=`date`
+prob=1
+while [ $prob -le $pn ] ; do
+   pb=${probname[$prob]}
+   lowsars-st $'\011' $prob < ../result > ../ranking-$pb
+   echo $dt >> ../ranking-$pb
+   prob=`expr $prob '+' 1`
+done
+lowsars-st $'\011' < ../result > ../ranking
+lowsars-st ',' < ../result > ../ranking.csv
+echo $dt >> ../ranking
+echo $dt >> ../ranking.csv
+cat ../ranking
+echo "For more ranking please see ranking-<prob> ."
+echo Press ENTER to view the result in OpenOffice or Crtl-C to break...
+read
+ooffice ../ranking.csv
