@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# List all the languages
+langs=zh_CN
+f=lowsars
+# Merge kmess.pot messages for each language
+# (same as "cd po; make merge" if you have the Makefiles
+#  generated in the same folder Makefile.in lives)
+for lang in $langs
+do
+	echo $lang
+	mv "$lang/$f.po" "$lang/$f.po.bak"
+	msgmerge -o "$lang/$f.po" "$lang/$f.po.bak" "$f.pot" && rm "$lang/$f.po.bak"
+done
