@@ -9,6 +9,5 @@ f=lowsars
 for lang in $langs
 do
 	echo $lang
-	mv "$lang/$f.po" "$lang/$f.po.bak"
-	msgmerge -o "$lang/$f.po" "$lang/$f.po.bak" "$f.pot" && rm "$lang/$f.po.bak"
+	msgfmt -f $lang/$f.po -o $lang/$f.mo
 done
