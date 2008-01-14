@@ -3,39 +3,31 @@
 # This file is distributed under the same license as the LowSars package.
 # lsz <chinatslsz@hotmail.com>, 2007.
 # , fuzzy
-# 
-# 
+#
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: lowsars 0.2 alpha\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-01-14 20:12+0800\n"
-"PO-Revision-Date: 2007-09-30 16:04+0800\n"
-"Last-Translator: lsz <chinatslsz@hotmail.com>\n"
+"POT-Creation-Date: 2008-01-14 21:11+0800\n"
+"PO-Revision-Date: 2008-01-14 21:09+0800\n"
+"Last-Translator: Liu Sizhuang(刘思壮) <chinatslsz@hotmail.com>\n"
 "Language-Team: Chinese/Simplified <i18n-translation@lists.linux.net.cn>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: lowsars.sh:89
-msgid "Name List"
-msgstr "选手列表"
-
-msgid "aaa"
-msgstr "xxx"
-
 #: ../lowsars:122
 msgid "No such parameter:"
-msgstr ""
+msgstr "没有这样的参数:"
 
 #: ../lowsars:134
 msgid "something not used: "
-msgstr ""
+msgstr "没有使用的: "
 
 #: ../lowsars:141
-#, fuzzy
 msgid "File not found: "
-msgstr "源文件未找到"
+msgstr "文件未找到: "
 
 #: ../lowsars:148
 msgid "Lightweight OI Wonderful Scoring And Ranking System"
@@ -43,51 +35,51 @@ msgstr "轻量级OI奇妙的评测系统"
 
 #: ../lowsars:240
 msgid "No such command in config file:"
-msgstr ""
+msgstr "配置文件中没有此命令:"
 
 #: ../lowsars:365
-#, fuzzy
 msgid "Testing "
-msgstr "测试题目"
+msgstr "正在测试 "
 
 #: ../lowsars:407
-#, fuzzy
 msgid "s"
-msgstr "-s"
+msgstr "秒"
 
 #: ../lowsars:407
-#, fuzzy
 msgid "Score: "
-msgstr " 分数"
+msgstr "得分: "
 
-#: ../lowsars:414 ../lowsars:418
-#, fuzzy
-msgid "Total score for "
-msgstr "总分"
+#: ../lowsars:414 ../lowsars:421
+msgid "Total score for %1 : %2"
+msgstr "%1 的总分: %2"
 
-#: ../lowsars:422
+#: ../lowsars:428
 msgid "Judging ended at: "
-msgstr ""
+msgstr "评测结束时间: "
 
-#: ../lowsars-1p:50
-msgid "Time Limit Exceeded."
-msgstr "超时"
+#~ msgid "Total score for "
+#~ msgstr "%1 的总分: "
 
-#: ../lowsars-1p:56
-msgid "Special Judge Error."
-msgstr ""
+#~ msgid "Name List"
+#~ msgstr "选手列表"
 
-#: ../lowsars-1p:63
-msgid "Accepted."
-msgstr "答案正确"
+#~ msgid "aaa"
+#~ msgstr "xxx"
 
-#: ../lowsars-1p:66
-msgid "Wrong Answer."
-msgstr "答案错误"
+#~ msgid "Time Limit Exceeded."
+#~ msgstr "超时"
 
-#: ../lowsars-1p:68
-msgid "No output file."
-msgstr "无输出文件"
+#~ msgid "Special Judge Error."
+#~ msgstr "Special Judge 错误。"
+
+#~ msgid "Accepted."
+#~ msgstr "答案正确"
+
+#~ msgid "Wrong Answer."
+#~ msgstr "答案错误"
+
+#~ msgid "No output file."
+#~ msgstr "无输出文件"
 
 #~ msgid "Name "
 #~ msgstr "姓名 "

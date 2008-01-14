@@ -411,11 +411,17 @@ for ct in $ctls; do
       done
       tt[ctid]=$((tt[ctid]+pt[ctid*maxprob+probid]))
       echo "Total ${pt[ctid*maxprob+probid]}" >> "$uniform/$ct/$prob"
-      echo "`gettext "Total score for "`$ct.$prob: ${pt[$ctid*$maxprob+$probid]}" | tee -a $friendly
+      str_="`gettext "Total score for %1 : %2"`"
+      str_=${str_//"%1"/"$ct.$prob"}
+      str_=${str_//"%2"/"${pt[$ctid*$maxprob+$probid]}"}
+      echo "$str_" | tee -a $friendly
       #echo -n " ${pt[ctid*maxprob+probid]}" >> $summary
    done
    #echo "$ct total ${tt[ctid]}" >> $uniform
-   echo "`gettext "Total score for "`$ct: ${tt[ctid]}" | tee -a $friendly
+   str_="`gettext "Total score for %1 : %2"`"
+   str_=${str_//"%1"/"$ct"}
+   str_=${str_//"%2"/"${tt[ctid]}"}
+   echo "$str_" | tee -a $friendly
    #echo " ${tt[ctid]}" >> $summary
 done
 #date "+%Y %m %d %H %M %S" >> $uniform
