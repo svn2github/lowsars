@@ -2,6 +2,8 @@
 # escape.sh: bash escaping and substituting function used in lowsars
 # Copyright © 2007 Yu Hang, released under GNU General Public License Version 2 or later
 
+#put this file in prefix/share, if lowsars-test or anything else using it is in prefix/bin
+
 : ${ESCAPECHAR="%"}
 declare -p ESCAPE_VALUES &>/dev/null||ESCAPE_VALUES=([37]="%" [32]=" ")
 #this in fact does not work if not called by . command!
