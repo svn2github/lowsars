@@ -5,7 +5,7 @@
 check(){
    echo -n "checking for $1..."
    a=`which $1`
-   if [ "x$a" != "x" ]; then
+   if [ "$a" != "" ]; then
       echo $a
    else
       echo "no"
@@ -25,6 +25,10 @@ check ls
 check echo
 check cat
 check sleep
+check basename
+check dirname
+check bc
+check tee
 check msgfmt
 check sort
 check msgmerge
