@@ -1,7 +1,0 @@
-#!/bin/sh
-
-# Make the lowsars.pot file.
-cp lowsars.pot lowsars.pot.bak
-xgettext ../lowsars* -j -L Shell -o lowsars.pot && rm lowsars.pot.bak
-# Add more files here in the future.
-
