@@ -1,0 +1,1289 @@
+#!/bin/bash
+# lowsars-test: Lowsars single point tester. Completely rewritten replacement for lowsars-1p by Yu Hang (cosechy@gmail.com)
+# Copyright © 2007 Yu Hang, released under GNU General Public License Version 2 or later
+# Is it "Light-weighted" anymore?
+# I recommend Advanced Bash-Scripting Guide by Mendel Cooper (http://tldp.org/LDP/abs/html/ chinese version: http://www.linuxsir.org/main/doc/abs/abs3.7cnhtm/) as a bash manual, it helped me a lot.
+
+# To-do: output filelist(mainly for -x and -d); parameter checks(hard work); additional parameters in environment variable; test using limited user; file access limit(even with limited user); process limit; gettext support; more runtime error messages; shell command support for judge(gave up, use bash -c instead); disallow gui or direct rendering(which may halt the system); external oj submitter script(lsural, lsvij, etc); remove any system dependent options; use join and fold to reformat help(is newline&space replacing faster than the current implementation?); fd number automatic assigning(nearly gave up, zsh have this feature better); documentation and comment updating; interactive judge with (doubled)file and pid access; multiple competition judge: interactive judge to external fd or pipe files; remove the sleep&kill subshell; use exec in the running shell and move timing and signal capturing out; replace first parameter by user:problem:case or likely; add units processing for time and memory/disk size; score factors support(especially for multiple scored judges); attach result of more judges excuted to the detail result; reformat the verbose messages like the help, if it is ran in a terminal
+# Bugs: cached stdin with more than 64kb may get stuck, use -I tempfile -RSr tempfile instead; some processes does not accept sigint or sigterm at just beginning; outputlimit for stdout logfile fails when --show-stdout set
+# Limitations: programs with small fd's in parameter will not be tested correctly; it is possible for evil submitters to get the input data by user time delaying(getting killed with specified user time, to hide the time of unaccepted is ok); internationalized message of sigxxx may not be loaded if memory limit is too small
+
+shopt -s extglob
+#i should not do that: it is too slow
+hash basename &>/dev/null
+hash dirname &>/dev/null
+[ "$LOWSARS_LIBDIR" = "" ]&&{
+LOWSARS_LIBDIR="`dirname -- "$0"`/"
+[ "${0:0:1}" = "/" ]||LOWSARS_LIBDIR="$PWD/$LOWSARS_LIBDIR"
+LOWSARS_LIBDIR="${LOWSARS_LIBDIR//\/+(.\/)//}"
+while t="`basename -- "$LOWSARS_LIBDIR"`"; [ "$t" = ".." ]
+  do LOWSARS_LIBDIR="${LOWSARS_LIBDIR//\/!(..|*\/*)+(\/)..+(\/)//}"; done
+  #slow
+case "$t" in
+  bin|sbin)LOWSARS_LIBDIR="`dirname -- "$LOWSARS_LIBDIR"`/share/lowsars";;
+esac
+}
+LOWSARS_LIBDIR="$LOWSARS_LIBDIR/"
+LOWSARS_LIBDIR="${LOWSARS_LIBDIR//+(\/)//}"
+
+show_version(){ echo "lowsars-test 0.2.0 beta"; }
+#changelog:
+#0.2.0 beta some parameter changes, judge list added, advanced escaping added(added dependency on escape.sh) but for -j and -C only
+#0.2.0 alpha4.3.bugfix get everything work, replaced some used signals
+#0.2.0 alpha4.3 non-cached stdin input bug fixed, pascal error codes added, sessionid removed, a slow help formater added
+#0.2.0 alpha4.2 memory limit added, but more inacurrate, changed time limit to user+sys by default, memory limit and output limit supported, but added another process again
+#0.2.0 alpha4 reduced the process number(like power) again, with the cost of more file streams(like the qq numbers), but some undocumented usage of bash added, too
+#0.2.0 alpha3bugfix2 a super simple automatic compiling added
+#0.2.0 alpha3bugfix running control stream added, reduced the process number
+#0.2.0 alpha3 move input generation in run, some parameters changed, merged good results to error handler, output copy added, this version have a great bug that sometimes can get stuck
+#0.2.0 alpha2 add getopts support, combination of short parameters now possible
+#0.2.0 alpha complete rewritten, renamed to lowsars-test
+flush(){
+#used in show_usage, flush $cache, indent generated from $spaces
+cache=("${cache[*]} ")
+for ((k=t=0;k<${#cache};k+=${#outputline}+1,t=moreindent)); do
+  outputline="${cache:k:columns+1-t}"
+  #the last character in cache is a space
+  outputline="${outputline% *}"
+  bigcache[bcl++]="${spaces:0:t}$outputline"
+done
+}
+show_usage(){
+#█氢◣[usage]
+#this new help writer is really slow!!
+#very dispressed to know that bash string operations are mostly Ω(n²)...
+#i have tried my best to use the bash builtin functions, but
+if ttyinfo="`LANG=en stty -a 2>/dev/null 0<&1`"
+  then columns="${ttyinfo#?(*; )columns }"; columns="${columns%%;*}"
+    ((columns>0)) 2>/dev/null||columns=80; ((columns>120))&&columns=120
+  else columns=80
+fi
+spaces="  "
+((columns>48))&&while ((${#spaces}<columns)); do spaces="$spaces$spaces"; done
+#at last, this method seems to be quicker:
+{
+show=0
+cache=()
+cl=0
+bigcache=()
+bcl=0
+moreindent=0
+while IFS="
+"; read line&&IFS=" "; do
+  #DIRTY DIRTY
+  #read line is faster than line="`line`", but leading spaces ignored, for default IFS
+  #if IFS not reset, the ${cache[*]} expanding will have problem
+  if [ "${line:0:2}" = "  " ]&&[ "${line:5:3}" != " --" ]
+    then [ "$show" = "1" ]&&if [ "${cache[cl-1]: -1}" = ":" ]
+      then flush;cache=("$line"); cl=1
+      else line="${line#  }";cache[cl++]="${line#                                 }"
+    fi
+  elif [ "$show" = "1" ]&&flush
+    [ "${line:0:1}" = "*" ]
+    then show=0
+  elif cache=("$line"); cl=1; show=1; [ "${line:0:2}" = "  " ]
+    #set indent
+    then moreindent=35
+    else moreindent=2
+  fi
+done
+IFS=" "
+[ "$show" = "1" ]&&flush
+IFS="
+"
+echo "${bigcache[*]}"
+
+#IFS="
+#"
+#read -d \\ -a lines
+}<<<"Usage: $testername PROGRAM [INPUT ...] [ANSWER]
+* -a, --case=caseid              automatically generate filenames of the case
+  -A, --allow-stdin              allow stdin, turn off caching and disable
+                                   killing, same as -SrRk off, if you don't
+                                   want to test interactively, use -rR instead
+      --alarm-time=timeexpr|off  send SIGXCPU to program after this time,
+                                   timeexpr is a number optionally following a
+                                   +, - or *, which specify the relation of -t
+                                   the ceiling integer of result of this
+                                   argument will be used, off by default
+* -b, --batch-test               set --uniform-result and -e,
+                                   lock -u -d -X -v -q --cpu
+                                   and make the current -c -m -t -o maximum
+* -B, --background-judge         run the judge together with tested program,
+                                   create a pipe between program's output and
+                                   judge input(may be file or stdin)
+*     --background-input         generate the next input file in background,
+                                   the tested program may run before the
+                                   generator stops even if -S not set
+* -c, --compile-limit=time|off   specify the timelimit for compiling
+  -C, --compiler=command|*       specify the compiler or *language for language
+                                   default, * or *auto for automatic
+      --check-compile            return full score if compiled, do not run
+      --checker=command          set -n -f and specify the judge command
+*     --clean                    remove all copied files after judge
+      --command=command          specify the command for judge, by default it's
+                                   ./PROGRAMNAME, followed by parameters
+*     --compile-input            compile after input files are copied
+*     --cow=cowname              display result using cowsay, * for random cow
+*     --cow-detail=cowname       --cow but only the detail part
+      --cpu=mask                 run on the specified cpu, mask has the same
+                                   format with command taskset
+  -d, --generate-data            set -j \"cp %o %a\", but generate md5 checksum
+                                   file if --md5-judge also set(not yet supported)
+* -D, --detailed-judge           judge returns everything needed in stdout, if
+                                   result is illegal, judge error is returned
+*     --data-directory=path      specify the directory to search and save data
+                                   files, current directory by default
+*     --end-compiler-define      lock -C -c -M --compile
+*     --end-judge-define         -b and lock --scored-judge --detailed-judge
+                                   --translate-detail --swap-judge-output -j -J
+                                   should be used before challenge cases
+  -f, --forced-judge             judge even if no answer file specified
+* -F, --filetype=list            allowed source types separated by pipe(|),
+                                   if there is only one and the source is set
+                                   as a file, it means the type of the file
+                                   set type as lang/pattern to specify a
+                                   different searched extension,
+                                   now c cpp pascal available
+*     --factor=number            multiply the (judge returned?)score by number
+*     --force-override           try to change permissions and remove old input
+* -g, --source=file|folder       specify a list where to get the source from
+* -G, --compare-standard=program -n and use standard program to generate answer
+*     --get-fortune=resulttype   do not judge, return a message just like --say
+  -h, --show-stdout              redirect program stdout to stderr
+  -H, --show-stderr              allow program to print messages to stderr,
+                                   these does not affect the use of -l -L
+  -i, --cat                      -n and make the first input file also answer
+  -I, --input=filename           specify the input filename for the next input
+                                   data file, by default, the first is
+                                   PROGRAM.in, others are unchanged, or
+                                   input, input0, input1...if there was no name
+*     --info                     return machine-readable infomations about the
+                                   result format of this program, for lowsars
+*     --input-generator=command  use it to generate a input data file
+*     --interactive-judge        alias of --judge-stdout=INPUTFILE(set by -I)
+                                   --stdin-judge --null-pipe
+  -j, --judge=command            specify the judge command, by default
+                                   \"diff --strip-trailing-cr -q %a %o\" is used
+  -J, --additional-judge=command add an additional judge, the list will be
+                                   sorted by the score, in descending order
+*     --judge-least-error=number if judge returned a equal or greater exitcode,
+                                   take it as an judge error
+      --judge-score=[*]number    specify the score for passing the last judge,
+                                   if * is specified(not yet supported), it is multiplied by the
+                                   original or judge returned score, by
+                                   default, the first judge returns full score
+                                   and others return zero
+*     --judge-stderr=filename    redirect judge stderr, not affected by
+                                   --swap-judge-output
+*     --judge-stdout=filename    redirect judge stdout
+*     --judge-message            use text judge has written to stderr as result
+  -k  --kill-time=timeexpr|off   the maximum real time for tested program,
+                                   the program will be killed after this time,
+                                   *5 by default
+  -K, --no-timelimit             set -t, -w and -k to off
+  -l, --log-stdout=filename      write stdout to file
+  -L, --log-stderr=filename      write stderr to file, note that these files
+                                   can be accessed by the judge program
+*     --leave-input              do not delete or count next input for --clean
+  -m, --memory-limit=size        specify the total memory limit in kilobytes
+*     --make                     compile the program with make
+*     --md5-judge                set -j \"md5sum -c --status %a\"
+*     --message-judge=string     if got correct result, the judge will return a
+                                   message beginning with this pattern, if -s,
+                                   % in the pattern is score, use \\% to escape
+  -n, --no-answer                take last parameter as input file
+  -N, --file-content=string      add a input file containing the string
+      --network-submit           display slightly different error messages
+                                   if --uniform-result set
+      --no-input-check           ignore if input did not prepared successfully
+*     --null-pipe                create pipe input file without writting to it
+  -o, --output-limit=size        specify the output filesize limit in kilobytes
+  -O, --output=filename          specify the output filename,
+                                   PROGRAM.out by default
+*     --output-null-pipe         the output file is a null pipe
+*     --output-pipe=file         create a pipe between output and file
+  -p, --plain-check              do not run the program, just check the answer
+  -P, --parameters=string        specify extra parameters passed to program
+*     --pipe                     the next file should be created as a pipe,
+                                   usually used with --background-input
+*     --process=number           the maximum process count of tested program
+* -Q, --quick-test               set --show-stdout --show-stderr --show-output
+  -r, --redirect-input           specify if the next file redirected to stdin,
+                                   similar to -I
+  -R, --read-file                specify if this file is read from stdin
+      --real-time                use real time in result, user+sys by default
+      --result=string            return the string if passed the last or main
+                                   judge, e.g \"Submited\", \"Scheduled\", etc,
+                                   the internal status codes can also be used,
+                                   \"Particular Point\" or \"Presentation Error\"
+                                   by default for each -J with or without score
+  -s, --scored-judge             specify if the judge writes score to stdout
+  -S, --stop-caching             don't cache or pre-copy following input data,
+                                   usually should be after any file inputs
+*     --say                      output result more likely to be someone said
+*     --say-all                  set both --say and --say-detail
+*     --say-detail               --say but for the detail part
+*     --say-only                 --say but remove the score and time
+      --score=number             specify the full score returned
+*     --short                    output abbreviasion of the result text
+*     --show-input               print the input files when generating
+      --show-answer              print the answer file if not get full score
+      --show-output              print the output file, on running if
+                                   --output-pipe set, and you should flush the
+                                   program output to see the result immediately
+*     --show-piped-output        --show-output if --output-pipe set,
+                                   redirect output pipe to stderr otherwise
+      --source-file=file         -g but give an error if it is a folder
+*     --source-folder=folder     -g but give an error if it is a file
+*     --source-input             allow input files to override binary or source
+*     --stdin-judge              redirect judge stdin to the program's output,
+                                   remove the output file from judge parameter
+*     --swap-judge-output        swap the meaning of judge stdout and stderr
+  -t, --time-limit=time|off      specify timelimit, off to disable,
+                                   you'll need -w to make it run longer
+  -T, --judge-text               use text judge has written to stdout as result
+*     --translate-detail=string  specify column names of detailed judge result,
+                                   and translate it to what this program used
+* -u, --user=username            test using the specified user, password read
+                                   from stdin, should be before any -b or -e
+      --uniform-result           print result even if there are grammer errors,
+                                   and disable --help, --version --info --cow
+                                   and --say-only, give score to --get-fortune
+      --user-time                use only user time in result
+  -v, --verbose                  print messages to standard error
+* -V, --virtual                  use symbolic links instead of copy input files
+  -w, --timewait=timeexpr|off    the maximum user+sys time for each process of
+                                   tested program, +0.5 by default
+                                   the program will be killed after this time,
+                                   the ceiling integer of result of this
+                                   argument will be used
+  -W, --workdir=folder           specify the judge working directory
+* -x, --remove-old-files         force remove old output file, generate an
+                                   error if not removable
+* -X, --makefile=filename        generate makefile instead of doing real test
+* -y  --self-judge               the program itself is a judge, use its result
+* -z  --expand-command           expand the next command string to be multiple
+                                   words, quotes must be double escaped like
+                                   \\\\\\\" if you type it from the terminal
+      --help                     display this help and exit
+      --version                  output version information and exit
+*not implemented features, should be implemented or removed in formal release
+each parameter following -- and a space will not be taken as an option
+anything unexpected write to stdout will be redirected to stderr
+and fd's from 3 to 9 may be blocked in some places, so don't use that
+in the current version, it will print \`score time messages' in the first line
+  and more details in the second line to the standard output
+to test your program using standard I/O, use:
+  $testername PROGRAM -r INPUT -l PROGRAM.out ANSWER
+or if you want to test interactively, use:
+  $testername PROGRAM -SrR -l PROGRAM.out ANSWER
+remove -S and add -w off for non-cached input
+use -R to read file data from stdin
+and always use -b to test a number of source-unknown paramlists and programs"
+#not as windows, the terminal will not make a blank line for newline at the end of previous line, then why not to use the 80th character place?
+}
+
+#█氦◣[small functions]
+show_result_columns(){
+#this is implemented, but not used, and hidden in usage
+echo "score time .message"
+echo "..detail"
+#. end this line, .. end the whole output, without breaking by spaces/newlines
+#or anything after last parameter is ignored
+}
+
+tell(){
+#tell message
+#used in run time error message liberaries
+#separating different messages
+if [ "$begin" = "0" ]; then begin=1; echo -n "("; else echo -n ", "; fi
+echo -n "$msgprefix$*"
+}
+
+#█锂◣[result returning]
+getresult(){
+#getresult code [score] [detail] [alternate message type]
+#originally geterror, bad integration with --cow
+#now codes less than -64 is good result, -128 is tested, -192 is scored
+#why use binary instead of decimal!
+#SHOULD BE CHANGED to string result(like fs:ac,rl:tle,err:uo)
+[ "$1" = "" ]&&getresult 247 "$2" "$3" "$4"
+trap exit
+judgedetail=
+score="$2"
+case "$1" in
+  1)msg="unrecognized option \`$param'";;
+  2)msg="option \`$param' requires an argument";;
+  3)msg="program name required";;
+  4)msg="illegal input type";;
+  #5)msg="tested command not found(try adding ./ prefix)";;
+  #use -140 instead
+  6)msg="compiler not found";;
+  7)msg="illegal time";;
+   #check on reading parameters needed
+  8)msg="illegal size";;
+  9)msg="illegal cpu mask";;
+  97)msg="error during input data generation";;
+  98)msg="could not access the working directory";;
+  161)msg="the judge program exited abnomally";;
+  193)msg="terminated by user";;
+  239)msg="tester exited for unknown reason";;
+  245)msg="unknown error while judging";;
+  247)msg="unknown error while returning result";;
+  249)msg="unknown error while getting running status";;
+  250)msg="unknown error while running";;
+  251)msg="unknown error on input preparing";;
+  254)msg="unknown error on parameter parsing";;
+  255)msg="unknown error";;
+  #a bit confusing that error details and judge messages are all here, with extra judgedetail
+  #ac
+  -239)msg="Accepted";;
+  -238)msg="Extra Point";;
+  -237)msg="Bonus!";;
+  #ok
+  -223)msg="Compiled Successfully";;
+  -222)msg="Running Successfully";;
+  -221)msg="Parameters OK";;
+  -220)msg="Environment OK";;
+  -219)msg="Conguatulations RP++";;
+  -218)msg="Answered";;
+  -217)msg="Done";;
+   #sent, etc
+  #pp
+  -207)msg="Partial Point";;
+  -206)msg="Presentation Error";;
+  #resource limit
+  -191)msg="Time Limit Exceeded"
+    if [ "$killed" = "1" ]
+      then judgedetail=" (killed after real time expired)"
+    elif [ "$execmessage" = "" ]
+      then judgedetail=" (terminated with exitcode "$exitcode")"
+    elif ((exitcode>127&&exitcode<193))
+      then judgedetail=" (terminated by SIG`kill -l "$exitcode" 2>&6`)"
+      else judgedetail=" (terminated with unknown reason)"
+    fi
+    judgedetail="Program reached the time limit ${timelimit}s, stopped at ${judgetime}s$judgedetail";;
+  -190)msg="Memory Limit Exceeded";;
+  #run errors
+  -175)msg="Runtime Error $exitcode"
+    judgedetail="Program exits abnormally, with code $exitcode`
+      #runtime error messages
+      begin=0
+      #0: cpp; 1: c; 2: pascal
+      [ "${messagelib[2]}" = "1" ]&&. "$LOWSARS_LIBDIR/errorcodes-fp" "$exitcode" 2>&6
+      #the external liberary calls tell to give result
+      #useful if there are multiple languages here
+      [ "$begin" = "1" ]&&echo -n ")"
+      #clear
+    `";;
+  -174)sig="`kill -l $exitcode 2>/dev/null`"
+    #signal
+    msg="${sig:+SIG}${sig:-"Signal $((exitcode-128))"}"
+    judgedetail="Program terminated by $msg: $execmessage`
+      case $sig in
+        #some hint about anything could not yet be checked
+        KILL) echo -n ", you break the program or some hard limit exceeded?";;
+        TERM|INT|QUIT) echo -n ", you break the program?";;
+        XFSZ) echo -n ", hard disk full or output limit exceeded?";;
+        XCPU) echo -n ", alarm time exceeded?";;
+        #HUP) echo -n ", you... have closed this terminal?";;
+        PIPE) echo -n ", problem in output redirection?";;
+        STOP) echo -n ", the program is still running in background?";;
+      esac
+    `";;
+  -173)msg="Output Limit Exceeded";;
+  -172)msg="Unknown run error"
+    judgedetail="${execmessage:+The message is: }${execmessage}";;
+  #wrong answer
+  -159)msg="Wrong Answer";;
+  -158)msg="Sorry...";;
+  -151)msg="Thanks For Participation";;
+  #basic submitting problems
+  -143)msg="Not Submitted";;
+  -142)msg="Source Not Found";;
+  -141)msg="Compile Error";;
+  -140)msg="Excutable Not Found";;
+  -139)msg="No permission";;
+  -135)msg="Out Of Time";;
+  -134)msg="Declined";;
+  #waiting
+  -127)msg="Submitted";;
+  -126)msg="Scheduled";;
+  -125)msg="Queued";;
+  -124)msg="Waiting";;
+   #e.g send to external judges, extra timewaits on contest
+  -123)msg="Result OK";;
+   #unpublished contest result
+  -95)msg="Compiling";;
+  -94)msg="Starting";;
+   #caching
+  -93)msg="Running";;
+  -92)msg="Judging";;
+  *)if (($1<-64)); then msg="Unknown Status $1"
+    elif (($1<=0)); then msg=; else msg="unknown error $1"; fi;;
+esac
+: ${score:=0}
+if (($1<-64)); then
+  ((showanswer&&$1>-209&&$1<-160))&&cat <"$outputdata" 1>&7 2>&6
+  if [ "$4" = "1" ]&&[ "$3" != "" ]
+    then judgedetail="$msg`[ "$score" = "0" ]||echo -n ": $score points"`"; msg="$3"
+    else judgedetail="$judgedetail`[ "$judgedetail" = "" ]||echo
+      echo "${3:+${4:+Judge result: }}$3"`"; fi
+  echo "Now it's the final summary: $msg for $score points, ${judgetime:+"in "}${judgetime:-"time unavailable"}${judgetime:+" seconds"}" 1>&6
+  echo "Details: ${judgedetail:-"(no more details)"}" 1>&6
+  echo "$score ${judgetime:-0.000} $msg"
+  printf %s\\n "$judgedetail"
+  #better plainecho alternative than cat<<<, it can't handle \0 character, but the bash variables can't handle as well
+  exit $(($1>-225))
+elif msg="$msg${3:+": "}$3"
+  [ "$returnonerror" = "1" ]; then
+  echo -n "$score ${judgetime:-0.000} "
+  if (($1>63)); then
+    if (($1>223)); then
+      echo "Unknown System Error"
+      echo -n "An unknown system error occurred"
+    else echo "Judge Error $1"
+      echo -n "An error occurred"
+      case "$(($1/32))" in
+        2)echo -n " on compiling";;
+        3)echo -n " on data preparing";;
+        4)echo -n " on running";;
+        5)echo -n " on testing";;
+        #6)other errors 7)unknown errors
+      esac
+      echo -n "${msg:+": "}$msg"
+    fi
+  elif echo "Invalid Test"; (($1<0))
+    then echo "Option disabled: \`$param'"
+    else echo -n "Errorous judge configuration${msg:+": "}$msg"
+  fi
+  (($1>=0))&&if [ "$alternativedetail" = "0" ]
+    then echo ", check your parameters/configurations and data files"
+    else echo ", please contact the system administrators if you have any problems"; fi
+  exit 2
+#do not use 1>&7 here, this is judge result
+else
+  (($1>0))&&if echo -n "$testername: $msg" 1>&7
+    [ "$readresult" = "1" ]
+    then echo " (tested program terminated at ${realtime}s, user ${usertime}s, sys ${systemtime}s)" 1>&7
+    else echo 1>&7
+  fi
+  (($1>=0&&$1<64))&&echo "Try \`$testername --help' for more information" 1>&7
+  (($1>127&&$1<192))&&{ echo "0 $judgetime Judge Error $1";echo "$msg";}
+  #0 does not means no error, but no error result(obsolete feature)
+  [ "$1" = "-1" ]&&show_usage
+  [ "$1" = "-2" ]&&show_version
+  [ "$1" = "-3" ]&&show_result_columns
+  exit $((($1>0)*2))
+fi
+} 1>&3 2>/dev/null
+
+readresult=0
+trap 'trap sigint; getresult 193' sigint sigterm
+trap 'getresult 239' exit
+trap '' sigalrm sigusr2
+
+skiprun(){
+trap sigint
+echo "Time limit exceeded or SIGINT caught, skipping running..." >&6
+echo 0.000 0.000 0.000
+echo 0
+} >&10
+
+#processes used:
+#killwaitproc, testproc, runbgproc, newrunbg
+
+clearrun(){
+#█氧◣[process cleaning]
+echo $exitcode 1>&10
+[ "$testproc" = "-" ]||if echo -n "Program exits with exitcode $exitcode" 1>&6
+  [ "$killwaitproc" = "-" ]; then echo
+  else echo ", now killing timewait processes..."
+fi 1>&6 2>&6
+[ "$killwaitproc" = "-" ]||[ "$killwaitproc" = "" -a "$lastbgproc" = "$!" ]||{ kill "${killwaitproc:-$!}"; wait "${killwaitproc:-$!}"; } 1>&6 2>&6
+
+#close output files and wait output writting program to finish
+exec 8>&- 9>&-
+[ "$runbgproc" = "" ]||wait $runbgproc 1>&6 2>&6
+[ "$newrunbg" = "-" ]||[ "$lastbgproc" = "$!" ]||wait "$!" 1>&6 2>&6
+popd 1>/dev/null 2>&6
+
+#input termination is in the outer shell
+#restore the original trap if not running in subshell, and not caught sigint yet
+[ "$started" = "-" ]&&[ "$skiprun" = "0" ]&&trap stopall sigint sigterm
+}
+
+runtest(){
+#█氟◣[running test]
+#5<stdin 10>result 8>stdoutlog 9>stderrlog
+trap 'trap sigint; skiprun=1' sigterm sigint
+trap '' sigalrm
+trap 'kill -usr2 $$' return
+#replacement for chld, which fails
+
+if ! pushd "$workdir" 1>/dev/null 2>&6
+  #chdir failed
+  then echo 98 >&10; echo 0.000 0.000 0.000 >&10; echo 0 >&10
+elif ! [ -e "$testcommand" ] 1>&7 2>&7
+  #not found, double check
+  then echo -140 >&10; echo 0.000 0.000 0.000 >&10; echo 0 >&10
+elif ! [ -x "$testcommand" ] 1>&7 2>&7
+  #not excutable
+  then echo -139 >&10; echo 0.000 0.000 0.000 >&10; echo 0 >&10
+else echo 0 >&10
+#tell there is no error before run
+runbgproc=
+newrunbg=-
+killwaitproc=-
+testproc=-
+trap 'skiprun; skiprun=1; clearrun; return 1' sigint sigterm
+#clearrun waits runbgproc, even if skipped the real test
+[ "$skiprun" = "1" ]&&{ skiprun; clearrun; return 1;}
+#skiprun does no effort except popd and trap sigint
+
+{
+
+[ "$doublestdout" = "1" ]&&{
+exec 4>&8 8<> >(:)
+(:)
+#bash bug: fd63 kept open on the next line, but why : doesn't work here while it usually does?
+lastbgproc="$!"
+newrunbg=
+tee /dev/fd/7 1>&4 0</dev/fd/8 8<&- 5<&- 9>&- &
+runbgproc="$runbgproc $!"
+newrunbg=-
+#close fd8 for writting, so that closing fd8 outside will give eof
+} 4>&-
+#restore the exec changes to original after this block
+#4>/dev/null, 4>&3 works(even if 3 was redirected to 4), but not 4>&4
+
+[ "$doublestderr" = "1" ]&&{
+exec 4>&9 9<> >(:)
+(:)
+lastbgproc="$!"
+newrunbg=
+tee /dev/fd/7 1>&4 0</dev/fd/9 9<&- 5<&- 8>&- &
+runbgproc="$runbgproc $!"
+newrunbg=-
+} 4>&-
+#same as above
+
+#█氖◣[run tested program]
+echo "Running \`$testcommand' in \`$PWD'..." 1>&6
+trap 'trap sigint; skiprun=1; [ "$testproc" = "-" ]||[ "$lastbgproc" = "$!" ]||kill -term "$!"' sigint sigterm
+skiprun2=0
+#skiprun2: just skip running, do remove sigint trap
+trap 'skiprun2=1; killed=1; [ "$testproc" = "-" ]||[ "$lastbgproc" = "$!" ]||kill -term "$!"' sigalrm
+#alrm: realtime limit exceeded! kill the running test
+
+[ "$skiprun" = "1" ]||[ "$killtime" = "off" ]||{
+lastbgproc="$!"
+killwaitproc=
+(lastbgproc="$!"
+trap '[ "$lastbgproc" = "$!" ]||kill "$!"; exit' sigterm
+#sigterm by default is exit directly
+[ "$skiprun" = "1" ]&&exit
+#if got sigint before this subshell begin
+sleep $killtime&wait $!&&kill -alrm $$ 2>&6
+) 1>&6 2>&6 8>&7 9>&7 4>&7 3>&7 &
+killwaitproc="$!"
+} 1>&6 2>&6
+lastbgproc="$!"
+testproc=
+
+(trap "skiprun;exit" sigterm
+#I don't know why, sigint fails here
+[ "$skiprun" = "1" ]||[ "$skiprun2" = "1" ]&&{ skiprun; exit;}
+TIMEFORMAT="%3R %3U %3S"
+echo "Setting limitations: -St $alarmtime -Ht $maxruntime -v $memorylimit -f $outputlimit" >&6
+[ "$alarmtime" = "off" ]||ulimit -St "$alarmtime" 1>&6 2>&6
+[ "$maxruntime" = "off" ]||ulimit -Ht "$maxruntime" 1>&6 2>&6
+[ "$memorylimit" = "off" ]||ulimit -v "$memorylimit" 1>&6 2>&6
+[ "$outputlimit" = "off" ]||ulimit -f "$outputlimit" 1>&6 2>&6
+wait #should not happen, but if happen, the time result will be inaccurate
+lastbgproc="$!"
+trap '[ "$lastbgproc" = "$!" ]||kill -kill "$!" 1>&6 2>&6' sigterm
+{ time {
+"${launcher[@]}" "${testcommand[@]}" 1>&8 2>&9 3>&- 10>&- 0<&5-&
+wait $! 1>&6
+#recover the status if killed, must print result before time
+wait $! 1>&6;};} 1>&6 2>&10
+) 2>&6 &while kill -0 $! 1>&6 2>&6; do wait $!; done; wait $!
+
+exitcode=$?
+trap "" sigalrm
+#ignore alrm after the run is finished
+}
+#the old tricky way: 8>${doublestdout:->(tee /dev/fd/7 1>&8)} 9>${doublestderr:->(tee /dev/fd/7 1>&9)}
+#8 and 9 may or may not be closed here, this is ok
+
+clearrun
+return "$skiprun"
+
+fi 1>&6 2>&6
+
+[ "$started" = "-" ]&&[ "$skiprun" = "0" ]&&trap 'trap sigint; stopall' sigint
+trap stopall sigterm
+#this is included in clearrun"${started:-$!}"
+#if skiprun set, the trap should be cleared
+return "$skiprun"
+} 4>&-
+
+clearread(){
+#clearread [debug:source]
+#original a clearer, to wait processes writing result to end
+echo "Reading the final result(called by: $1)..." >&6
+{ exec 4</dev/fd/10 10<&- 10<&4; } 4>&-
+#close it for writing, bash have a bug that fd's greater than 10 are not reopened
+read result 0<&10
+resultlines=()
+while read resultlines[${#resultlines[@]}] 0<&10; do :; done
+[ "${resultlines[${#resultlines[@]}-1]}" = "" ]&&unset resultlines[${#resultlines[@]}-1]
+if ((${#resultlines[@]}>2)); then
+  execmessage="${resultlines#*:*:*[0-9]* }"
+  execmessage="${execmessage%% \"*}"
+  read -r execmessage<<<"${execmessage//+( )/ }"
+elif execmessage=; ((${#resultlines[@]}<2)); then
+  read realtime usertime systemtime exitcode<<<"0.000 0.000 0.000 0"
+  [ "$started" = "-" ]||wait "${started:-$!}"
+  trap "" sigalrm
+  [ "${result:-0}" = "0" ]&&result=249
+  #give an unknown error, but if called because of sigint, this does no effort
+  #readresult is still 0
+  return
+fi
+read realtime usertime systemtime<<<"${resultlines[${#resultlines[@]}-2]}"
+case "$timetype" in
+  0)judgetime="$realtime";;
+  1)judgetime="$usertime";;
+  2)judgetime="$systemtime";;
+  3){ judgetime="`bc`";} 2>&6 <<<"$usertime+$systemtime"
+    if [ "$judgetime" = "0" ]
+      then judgetime="0.000"
+      #a bug of bc
+    elif [ "${judgetime:0:1}" = "." ]
+      then judgetime="0$judgetime"
+    fi;;
+esac
+exitcode="${resultlines[${#resultlines[@]}-1]}"
+[ "$started" = "-" ]||wait "${started:-$!}"
+trap "" sigalrm
+readresult=1
+}
+
+stopall(){
+#stopall [noread]
+#sometimes this is just for getresult
+trap sigint
+exec 4>&-
+echo "SIGINT caught, stopping the whole process..." >&6
+[ "$started" = "-" ]||[ "$started" = "" -a "$!" = "$lastbgproc" ]||{
+  kill -term "${started:-$!}" 1>&6 2>&6
+  #sigint fails
+  while kill -0 "${started:-$!}" &>/dev/null; do wait "${started:-$!}"; done
+  wait "${started:-$!}"
+  #usr2 and alrm may break the wait
+} 1>&6 2>&6
+[ "$1" = "" ]&&clearread sta
+getresult 193
+}
+
+checkstatus(){
+[ "$skipinput" = "1" ]||[ "$started" = "-" ]||kill -0 "$started" 1>/dev/null 2>&6||skipinput=1
+#ps -p will start another process, and if runtest exits while ps in the first checkstatus running, the signal may lost
+#if the signal lost because of the data generation process, it will be ok because there is nothing to kill
+return "$skipinput"
+}
+
+passalrm(){
+killed=1
+[ "$started" = "-" ]||[ "$started" = "" -a "$lastbgproc" = "$!" ]||kill -alrm "${started:-$!}" 1>&6 2>&6
+#if runtest not started, lastbgproc is $!
+}
+
+#█钠◣[input generation]
+generateinput(){
+#generateinput inputfile inputdata inputtype inputid
+#4>input
+#return 1 on broken pipe
+#BE AWARE of the broken pipe, add parentheses around the builtins like echo, if used later
+[ "$4" = "$cachedto" ]&&{
+  echo "All non-interactive input files generated, starting..." 1>&6
+  lastbgproc="$!"
+  trap "trap sigint;stopall" sigint sigterm
+  trap passalrm sigalrm
+  #pass sigalrm to runtest, because $$ is always the big shell
+  started=
+  runtest 4>&- &
+  #if you reverse the order of 4>&- and &, the file 4 will be still open with another number
+  #and it would never give eof to the tested program
+  started="$!"
+  #no matter if lastbgproc changed later, because started will be no longer empty
+  exec 5<&-
+  #get sigpipe if runtest close it too
+}
+[ "$skipinput" = "1" ]&&return 1
+lastbgproc="$!"
+if [ "$1" = "/dev/stdin" ]; then
+  echo "Input file $4 is redirected to stdin, from \`${2%"$'\015'"}', using method \`$3'..." 1>&6
+  case "$3" in
+    \*cp)cat <"$2" 3>&- 10>&- 1>&4 0<&0 &;;
+    \*echo)cat <<<"$2" 3>&- 10>&- 1>&4 &;;
+    *)trap "" sigusr2; exec 4>&-; (($4>=cachedto))&&clearread gi1; getresult 4 0 "\`$3'";;
+  esac
+else echo "Generating input file $4=\`$1', from \`${2%"$'\015'"}', using method \`$3'..." 1>&6
+  case "$3" in
+    \*cp)cp -- "$2" "$1" 1>&- 10>&- 3>&- 0<&0 &;;
+    \*echo)cat <<<"$2" 10>&- 3>&- 1>"$1" &;;
+    *)trap "" sigusr2; exec 4>&-; (($4>=cachedto))&&clearread gi2; getresult 4 0 "\`$3'";;
+  esac 1>&6 2>&6
+fi 8>&- 9>&- 5<&-
+trap "trap '' sigusr2; skipinput=1; kill $! 1>&6 2>&6; wait $!; wait $started" sigusr2
+#when received usr2, the control may be in stopall, do not use return here
+if [ "$skipinput" = "1" ]
+  then wait $started; kill $! 1>&6 2>&6; wait $!; return 1
+elif while kill -0 $! 1>&6 2>&6; do wait $!; done; then trap 'skipinput=1' sigusr2
+  #sigalrm may break this wait
+elif inputerrorcode=$?
+  trap 'skipinput=1' sigusr2
+  [ "$skipinput" = "1" ]
+  then return 1
+elif [ "$inputerrorcode" = "141" ]&&(($4>=cachedto))
+  then echo "Broken pipe caught before judge process exits"; return 1
+  #this should be prevented
+elif [ "$inputcheck" = "0" ]
+  then echo "The generating program exited abnormally, with code $inputerrorcode" 1>&6
+else
+  exec 4>&-; (($4>=cachedto))&&clearread gi3; getresult 97 0 "\`$1' from \`$2', using method \`$3'"
+fi 8>&- 9>&- 5<&-
+return 0
+} 1>&6 2>&6
+
+#█硫◣[defaults]
+#some comments should be moved to usage and the man page later
+timelimit=1
+alarmtime=off
+maxruntime="+0.5"
+killtime="*5"
+#don't add s suffix
+#alarmtime and maxruntime will be converted into integers
+timetype=3
+#0:real 1:user 2:sys 3:user+sys
+memorylimit=off
+outputlimit=off
+cpumask=""
+#empty for all
+
+judge=("diff --strip-trailing-cr -q %a %o")
+fullscore=10
+judgemap=()
+#used only on reading arguments, and converted into judge later
+judgescore=("")
+judgeresult=(-239)
+#judgeresult2=("FS:AC" "WA:PE")
+lastjudge=0
+forcejudge=0
+judgeinput=0
+judgemode=(0)
+#0: if judge returned no error, get fullscore
+#1: the first integer judge returned is the score
+usejudgetext=(0)
+#whether to use the text judge has returned as result or not
+plaincheck=0
+result=0
+
+verbose=/dev/null
+returnonerror=0
+showoutput=0
+showanswer=0
+showinput=0
+
+inputdata=
+inputfile=
+inputtype=
+count=0
+inputlistbegin=0
+lastinputfile=
+outputindex=
+cachedto=
+#inputdata, inputfile and inputtype are arrays of size count
+#why don't use ${#inputfile[@]}?
+inputcheck=1
+outputdata=
+nooutputdata=0
+outputfile=
+stdoutfile=/dev/null
+stderrfile=/dev/null
+doublestdout=0
+doublestderr=0
+
+realtime=0.000
+usertime=0.000
+systemtime=0.000
+judgetime=0.000
+exitcode=0
+execmessage=
+#used for plaincheck
+killed=0
+#if this is true and the result is SIGKILL, turn it to tle
+
+hash which &>/dev/null
+testername="`basename -- "$0"`"
+[ "$0" = "`which -- "$testername"`" ]||testername="$0"
+#used for getresult, should be 'lowsars-test'
+#this is something bad, it seems not possible to distinguish full path and filename in $PATH
+hash cat &>/dev/null
+hash cp &>/dev/null
+alternativedetail=0
+testcommand=("")
+launcher=()
+#launcher is something like aoss, sudo, env
+problem=
+workdir=
+
+compilername=("*c++" "*c" "*pascal")
+compilercmd=("g++ %s -o %c" "gcc %s -o %c" "fpc %s -o./%c")
+#source command spath stype name input output answer data workdir
+compilerext=("cpp" "c" "pas")
+messagelib=(1 1 1)
+compiler="*off"
+compileonly=0
+sourcefile=
+
+. "$LOWSARS_LIBDIR/escape.sh"
+
+{
+#█钾◣[read arguments]
+while if ! getopts :a:AbBc:C:defF:g:hHiI:j:J:k:Kl:L:m:MnN:o:O:pP:qrRsSt:Tu:vVw:W:xX:z-: param
+  then param=; arg="${!OPTIND}"; ((OPTIND++<=$#))
+  elif [ "$param" = "-" ]; then
+    param="--${OPTARG%%=*}"
+    arg="`[ "$param" = "--$OPTARG" ]||echo ${OPTARG#*=}=`";:
+  else param="-$param"; arg="$OPTARG=";:; fi; do
+  #if arg is not empty, add a trailing = and must be stripped below, for limitations of bash
+  #this is not a dirty thing (guaranteed correct, not crackable, do not harm following things)
+  #just ask why bash couldn't do like that, and you'll find a way
+  case "$param" in
+    --help)getresult -1;;
+    --version)getresult -2;;
+    --info)getresult -3;;
+    -b)returnonerror=1;;
+    -t|--time-limit)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      timelimit="${arg%=*}";;
+    -w|--timewait)[ "${arg:=${!OPTIND}${!OPTIND=$((OPTIND++))}}" = "" ]&&getresult 2
+      maxruntime="${arg%=*}";;
+    -k|--kill-time)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      killtime="${arg%=*}";;
+    --alarm-time)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      alarmtime="${arg%=*}";;
+    --user-time)timetype=1;;
+    --real-time)timetype=0;;
+    --cpu)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      cpumask="${arg%=*}";[ "${cpumask%%[- ]*}" = "$cpumask" ]||getresult 9;;
+      #bad check, only removing harmful - and space
+    -K|--no-timelimit)timelimit="off";killtime="off";maxruntime="off";;
+    -o|--output-limit)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      outputlimit="${arg%=*}";;
+    -m|--memory-limit)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      memorylimit="${arg%=*}";;
+    -c|--compile-limit);;
+    -C|--compiler)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      compiler="${arg%=*}";;
+    --check-compile)compileonly=1;;
+    --source-file)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      sourcefile="${arg%=*}";;
+    -a|--case);;
+    -p|--plain-check)plaincheck=1;;
+    -j|--judge)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      judge="${arg%=*}"
+      lastjudge=0;;
+    -J|--additional-judge)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      judge[lastjudge=${#judgelist[@]}]="${arg%=*}"
+      judgescore[lastjudge]=
+      judgeresult[lastjudge]=;;
+    --judge-score)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      judgescore[lastjudge]="${arg%=*}";;
+    --result)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      judgeresult[lastjudge]="${arg%=*}";;
+    -d|--generate-data)judge="cp %o %a";;
+    -f|--forced-judge)forcejudge=1;;
+    --cat)judgeinput=1;nooutputdata=1;;
+    -n|--no-answer)nooutputdata=1;;
+    --checker)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      judgelist="${arg%=*}"; nooutputdata=1; forcedjudge=1;;
+    -s|--scored-judge)judgemode[lastjudge]=1;;
+    -T|--judge-text)usejudgetext[lastjudge]=1;;
+    --score)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      fullscore="${arg%=*}";;
+    -I|--input)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      lastinputfile="${arg%=*}";;
+    -R|--read-file)inputfile[count]="$lastinputfile"
+      inputdata[count]="/dev/stdin"; inputtype[count++]="*cp";;
+    -N|--file-content)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      inputdata[count]="${arg%=*}"; inputtype[count]="*echo"
+      inputfile[count++]="$lastinputfile"; lastinputfile=;;
+    -O|--output)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      outputfile="${arg%=*}";;
+    -v|--verbose)verbose=/dev/stderr;;
+    -l|--log-stdout)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      stdoutfile="${arg%=*}";;
+    -L|--log-stderr)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      stderrfile="${arg%=*}";;
+    -h|--show-stdout)doublestdout=1;;
+    -H|--show-stderr)doublestderr=1;;
+      #this is a special one, empty is true and /dev/fd/8 or 9 is false
+    --show-output)showoutput=1;;
+    --show-answer)showanswer=1;;
+    -r|--redirect-input)lastinputfile="/dev/stdin";;
+    -A|--allow-stdin): ${cachedto:="$count"}; inputdata[count]="/dev/stdin"
+      inputtype[count]="*cp"; inputfile[count++]="/dev/stdin"; killtime="off";;
+    -S|--stop-caching): ${cachedto:="$count"};;
+    --uniform-result)returnonerror=1;;
+    --no-input-check)inputcheck=0;;
+    --network-submit)alternativedetail=1;;
+    -P|--parameters)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      testcommand=("${testcommand[@]}" "${arg%=*}");;
+    --command)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      testcommand="${arg%=*}";;
+    -W|--workdir)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+      workdir="${arg%=*}";;
+    -\?)param=-$OPTARG; getresult 1;;
+    -:)param=-$OPTARG; getresult 2;;
+    --*)getresult 1;;
+    -*)getresult 1;;
+    "")if [ "$inputlistbegin" = "0" ]; then problem="$arg"; inputlistbegin=1
+      else inputfile[count]="$lastinputfile"; lastinputfile=
+        outputindex="$count"; inputdata[count]="$arg"; inputtype[count++]="*cp"; fi;;
+      #no any more possibilities
+    *)getresult 254;;
+  esac
+done
+[ "$inputlistbegin" = "0" ]&&getresult 3
+
+#█钒◣[prepare parameters]
+                             ESCAPE_VALUES[110]="$problem" #%n
+if [ "$testcommand" = "" ]; then
+  if [ "$workdir" = "" ]
+    then testcommand="./`basename -- "$problem"`"
+  elif [ "${problem:0:1}" = "/" ]
+    then testcommand="$problem"
+    else testcommand="$PWD/$problem"; fi
+elif [ "$testcommand" = "${testcommand#*/}" ]
+  #the command does not contains /
+  then testcommand="`which -- "$testcommand"`"||getresult -140
+elif [ "${testcommand:0:2}" != "./" ]&&[ "${testcommand:0:1}" != "/" ]
+  #prevent problem for commands named -a/sth
+  then testcommand="./$testcommand"
+fi
+#this prevent the use of inner functions and shell builtins like exit AND exec parameters
+#only full paths, relative paths begin with ./ allowed
+                             ESCAPE_VALUES[99]="$testcommand" #%c
+: ${workdir:="`dirname -- "$problem"`"}
+                             ESCAPE_VALUES[119]="$workdir" #%w
+problem="`basename -- "$problem"`"
+                             ESCAPE_VALUES[110]="$problem" #%n
+
+if [ "$nooutputdata" = "1" ]; then outputindex=""
+elif [ "$outputindex" != "" ]; then
+ outputdata="${inputdata[outputindex]}"
+ ((outputindex+1!=count))&&[ "${inputfile[outputindex+1]}" = "" ]&&inputfile[outputindex+1]="${inputfile[outputindex]}"
+fi
+         ESCAPE_VALUES[105]="$workdir/${inputfile[1$outputindex==10]:="$problem.in"}" #%i
+                   ESCAPE_VALUES[111]="$workdir/${outputfile:="$problem.out"}" #%o
+: ${cachedto:="$count"}
+#so : is very different from #
+j=
+for ((i=1+(1$outputindex==10);(i+=i==outputindex)<count;i++)); do
+  [ "${inputdata[i]:0:1}" = "/" ]||inputdata[i]="$workdir/${inputdata[i]}"
+  if [ "${inputtype[i]}" = "*cp" ]
+    then [ "${inputfile[i]:="`basename -- "${inputdata[i]}"`"}" = "input$j" ]
+    else [ "${inputfile[i]:="input$j"}" = "input$j" ]
+  fi&&((j+=(1$j!=1)))
+done
+[ "$outputindex" != "" ]&&{
+#this is a really dirty one
+((count--))
+((cachedto>outputindex&&cachedto--))
+#cachedto will be accessed in generateinput, where the original id is restored
+#but moving may not be needed now, need rewritting...
+if [ "$outputindex" != "$count" ]; then
+  inputfile[outputindex]="${inputfile[count]}"
+  inputtype[outputindex]="${inputtype[count]}"
+  inputdata[outputindex]="${inputdata[count]}"
+else outputindex=; fi
+#dirty things finished
+}
+[ "$judgeinput" = "1" ]&&{
+  outputdata="$inputdata"
+  nooutputdata=0
+}
+                             ESCAPE_VALUES[100]="$inputdata" #%d
+                             ESCAPE_VALUES[97]="$outputdata" #%a
+[ "$stdoutfile" = "/dev/null" ]&&((doublestdout&&doublestdout--))&&stdoutfile="/dev/stderr"
+[ "$stderrfile" = "/dev/null" ]&&((doublestderr&&doublestderr--))&&stderrfile="/dev/stderr"
+
+#xxxxyxxxdxxhxxmxxs format of time parsing needed
+for i in timelimit alarmtime maxruntime killtime; do
+  case "${!i}" in
+    "")declare $i=off;;
+    off);;
+    [!-+*0-9.]*|?[!0-9.]|*.*.*)getresult 7;;
+    [!-+*]*);;
+    *)if [ "$timelimit" = "off" ]
+      then declare $i=off
+    elif [ "$i" = "timelimit" ]
+      then getresult 7
+      else { declare $i="`bc`";} 2>/dev/null <<<"$timelimit${!i}"
+    fi;;
+  esac
+  [ "${!i:0:1}" = "-" ]&&declare $i=0
+done
+for i in alarmtime maxruntime; do
+  if [ "${!i%%.*[!0]*}" != "${!i}" ]
+    then (($i="${!i%%.*}"+1))
+  elif [ "${!i}" != "off" ]
+    then (($i="${!i%%.*}"))
+  fi
+done
+[ "$maxruntime" = "0" ]&&maxruntime=1
+[ "$maxruntime" = "off" ]||{
+[ "$alarmtime" = "off" ]||{ [ "`bc`" = 1 ];} 2>/dev/null <<<"$alarmtime>$maxruntime"&&alarmtime="$maxruntime";}
+
+[ "$cpumask" = "" ]||launcher=(taskset "$cpumask" "${launcher[@]}")
+
+:
+} 3>&1 7>&2||geterror 255||{ trap exit;exit 2;}
+
+{
+#fd's used: 3: running errors; 4: cache program input; 5: program input; 10: test result
+#6: verbose; 7: stderr messages; 8: program stdout; 9: program stderr/prepared stdin
+result=0
+[ "$plaincheck" = "0" ]&&{
+
+pushd "$workdir" 1>/dev/null 2>&6||getresult 98
+#█铁◣[compilication]
+
+case "$compiler" in
+  \*none|\*off)compiler=;;
+  \*auto|\*)for ((i=0;i<${#compilerext[@]};i++)); do
+    if [ "$sourcefile" = "" ]
+      then [ -e "$testcommand.${compilerext[i]}" ]
+      else [ "${sourcefile%"${compilerext[i]}"}" != "$sourcefile" ]
+    fi&&{ compiler="${compilercmd[i]}"
+      : ${sourcefile:="$testcommand.${compilerext[i]}"}
+      messagelib=([i]=1)
+      break
+    }
+    ! :; done||getresult -142;;
+  \*exec\/*)compiler="${compiler#"*exec/"}";;
+  \**)for ((i=0;i<${#compilername[@]};i++)); do
+    [ "*${compilername[i]}" = "$compiler" ]&&{
+      : ${sourcefile:="$testcommand.${compilerext[i]}"}
+      if [ -e "$sourcefile" ]
+        then compiler="${compilercmd[i]}"; messagelib=([i]=1)
+        else getresult -142 "" "source file \`$sourcefile' not found"
+      fi
+      break
+    }; ! :; done||getresult 6 "" "$compiler";;
+esac
+
+[ "$compiler" = "" ]||{
+                             ESCAPE_VALUES[115]="$sourcefile" #%s
+  unescape "$compiler"
+  compiler="$escaperesult"
+  if [ "${escaperesult#*/}" = "$escaperesult" ]
+    then escaperesult="`which -- "$escaperesult"`"
+    else [ -e "$escaperesult" ]
+  fi||getresult 6 "" "$compiler"
+  #problem if a shell function contains the / character, but this environment problem can't be resolved anyway
+  echo "Compiling \`$sourcefile' with command \`${escaperesult[*]}'..." 1>&6
+  "${escaperesult[@]}" 1>&6 2>&6||getresult -141
+  #advanced escaping needed
+  #timing needed
+}
+#source directly running(renaming testcommand) support needed for scripts
+
+[ "$compileonly" = "1" ]||{
+  [ -e "$testcommand" ]||getresult -140 "" "tested program \`$testcommand' (in $workdir) not found"
+  [ -x "$testcommand" ]||getresult -139 "" "you have no permission to excute \`$testcommand' (in $workdir)"
+}
+
+popd 1>/dev/null 2>&6
+
+[ "$compileonly" = "0" ]&&{
+
+#█铜◣[prepare for run]
+#get a killing name first, with prefix nowused s(sleep, run timewait), j(judge)
+echo -n "Testing $problem with " 1>&6
+if [ "$count" = "0" ]
+  then echo -n "no input file"
+  else echo -n "input file \`${inputdata%"$'\015'"}' as \`$inputfile'"
+    [ "$count" = "1" ]||echo -n " (and $((count-1)) more)"
+  #\015 is the carriage return which apears in texts created in windows
+  #this avoids the problem of verbose output of -N input
+fi 1>&6
+if [ "$outputdata" != "" ]; then echo ", with standard answer $outputdata"
+  else echo ", with no standard answer"; fi 1>&6
+
+{
+#originally a big command in ``, but now removed and turned to use < >(:)
+started=-
+lastbgproc="$!"
+skiprun=0
+skipinput=0
+trap 'skipinput=1' sigusr2
+trap 'kill -usr2 $$; trap sigint; getresult 193' sigint sigterm
+
+#█镓◣[prepare data files], and call runtest to run!
+#a dirty thing need a dozen more dirty things to fix
+if : ${outputindex:="-1"}
+for ((i=0,j=0;j+=i==outputindex,i+j<count;i++))
+  do generateinput "${inputfile[i+j]}" "${inputdata[i+j]}" "${inputtype[i+j]}" "$i"||{ trap sigchld; i="$count";! :;}
+done&&{ [ "$outputindex" = "-1" ]||generateinput "${inputfile[outputindex]}" "${inputdata[outputindex]}" "${inputtype[outputindex]}" "$((count-1))"||{ trap sigchld; ! :;};}
+#break will make for return 0, so use another way
+#if errors occured and input check enabled, generateinput will call getresult and exit
+#there should be a clean before exit
+#dirty fix end, but it's now very short
+
+then echo -n "All input files generated" 1>&6
+else echo -n "Program exited before input generation finish" 1>&6
+fi
+exec 4>&-
+
+if ((count<=cachedto||cachedto<0));
+  then echo ", starting..." 1>&6; runtest||stopall
+  #runtest is not in a subshell, it will change the sigint trap
+  #but it will be restored if not interupted, or exitcode 1 returned
+elif [ "$skipinput" = 0 -a "$killtime" = "off" ]
+  then echo ", and automatic killing was disabled (press Ctrl+C to terminate)" 1>&6
+  #a hint here, or one will think it's my fault if the program have no response
+  else echo 1>&6; fi
+#start the run if not started yet, cachedto<0 should be impossible
+#this is not a background process, because it is not needed
+#fd5 may be now keeping open, but it doesn't matter
+
+#no preparing errors, read the running error, time and exitcode, and wait everything done
+#it will be stoped earlier if runtest is not running in background and get a SIGINT
+trap '' sigusr2
+trap "trap sigint; stopall ." sigint sigterm
+clearread fin
+trap "trap sigint; getresult 193" sigint sigterm
+
+#█铷◣[running redirection]
+} 1>&7 2>&7 8>"$stdoutfile" 9>"$stderrfile" 1>&6 2>&6 10<> >(:) 5< >(:) 4>/dev/fd/5
+#the (originally) big command ends here
+#$stdoutfile and $stderrfile may be /dev/stderr, this may be merged in run later
+#fd3 is the command stream
+
+echo "total time used: $realtime seconds (user ${usertime}s, sys ${systemtime}s)" 1>&6
+[ "$showoutput" = "1" ]&&cat "$workdir/$outputfile" 1>&7 2>&6
+#problem with -n -i etc
+}
+}
+
+#█金◣[basic running checks]
+echo "The final checking..." 1>&6
+if [ "$result" != "0" ]
+  #judge errors while running, detail may contain multiple words
+  then read code score detail<<<"$result"; getresult "$code" "$score" "$detail"
+elif [ "$compileonly" = "1" ]
+  then if [ "$plaincheck" = "1" ]
+    then getresult -221 "$fullscore" "Nothing has done"
+    else getresult -223 "$fullscore"
+  fi
+elif [ "$plaincheck" = "0" ]&&[ "$timelimit" != "off" ]&&{ [ "`bc`" = "1" ];} 2>&6 <<<"$judgetime>$timelimit"; then
+  #tle -191
+  [ "$exitcode" = "137" ]&&[ "$execmessage" != "" ]||killed=0
+  getresult -191
+  #if tle and rte etc can be assigned with a score later, use the score defined in getresult
+elif [ "$exitcode" = "" ]
+  #unknown error
+  then getresult 250
+elif [ "$exitcode" != "0" ]; then
+  if [ "$execmessage" = "" ]
+    #rte -175
+    then getresult -175
+  elif [ "$killed" = "1" ]&&[ "$exitcode" = "137" ]
+    then getresult -191
+  elif ((exitcode>127&&exitcode<193))
+    #sig -174
+    then getresult -174
+  else case "$exitcode" in
+    127)getresult -140;; #not found
+    126)getresult -139;; #no permission
+    *)getresult -172;; #unknown run error
+  esac; fi
+elif [ "$nooutputdata" = "1" -o "$outputdata" = "" ]&&[ "$forcejudge" = "0" ]; then
+  echo "Program exited with no error and no answer file specified, skipped judging" 1>&6;
+  getresult -222 "$fullscore"
+  #use another method to see output file content please, this is not good for oj tests
+
+#█锕◣[final judge]
+elif echo "Program exited with no error, calling judge..." 1>&6
+  for ((i=1;i<${#judgescore[@]};i++))
+    do judgemap[${judgescore[i]:=$(((i==0)*fullscore))}]="$i"; done
+  judgemap=("${judgemap[@]}" 0)
+  #keep the main judge at the first place
+  i="${#judgemap[@]}"
+  maxscore=
+  maxj=
+  maxresult=
+  j=
+  while
+    if ((judgeexitcode=$?))
+      then echo "Judge returned with exitcode $judgeexitcode: ${result:-"(nothing)"}" 1>&6
+    elif [ "$j" != "" ]; then echo "Judge returned: ${result:-"(nothing)"}" 1>&6
+      #if false then any is always true
+      case "${judgemode[j]}" in
+        1)read -r -d "" score result<<<"$result";;
+        *)score="${judgescore[j]:=$((10*(j==0)))}";;
+      esac
+      ((${maxscore:=score}<=score))&&{
+        maxscore="$score"
+        maxj="$j"
+        maxresult="$result"
+      }
+      ((score<${judgescore[j]}))
+    fi&&((--i>=0))
+  do
+    j="${judgemap[i]}"
+    unescape "${judge[j]}"
+    declare -p escaperesult 1>/dev/null 2>/dev/null||getresult 245
+    echo "Calling judge command \`${escaperesult[*]}'..." 1>&6
+    { result="`"${escaperesult[@]}"`";} 2>&6
+  done||[ "$maxj" != "" ]
+then
+  #passed any judge
+  case "$maxscore" in
+    ${judgescore[maxj]})judgecode="${judgeresult[maxj]:-$((maxscore?-207:-206))}";; #ac
+    $fullscore)judgecode="-239";; #alternative ac
+    0)judgecode="-159";; #wa
+    -*)judgecode="-158";; #the very sorry case
+    *)if (($fullscore<0)); then judgecode="-237" #easter's case
+      elif (($maxscore>$fullscore)); then judgecode="-238" #ep and pp left
+      else judgecode="-207"; fi;;
+  esac 2>&6
+  getresult "$judgecode" "$maxscore" "$result" "${usejudgetext[maxj]}"
+  #this will not cause errorous result even if fullscore=0
+  #for a non-scored judge, going here means full score
+else
+  #failed all the judges
+  if [ "${judgemode[j]}" = 0 ]
+    then getresult -159 "" "$result" "$usejudgetext" #wa
+    else getresult 161 "" "code $judgeexitcode" #judgeerror
+  fi
+fi
+
+#█錀◣[impossible place]
+getresult 255
+
+} 6>$verbose 7>&2 2>/dev/null 3>&1 1>&6
+
+getresult 255 3>&1 7>&2 6>/dev/null
+#file read/write error?
+
+exit 2 3>&1 7>&2 6>/dev/null
+trap exit
+exit 2
+
