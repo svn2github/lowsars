@@ -41,12 +41,12 @@ if SIGTERM is captured, it is equal to command % and set -s
 SIGUSR1 and SIGUSR2 will set and unset -s option
 $commandername will write one of the following to the specified path or fd:
       +resourcelist         request ok, returning the requested resource
-      ?                     resource not available and not waited
+      ?                     resource not available and not waited, or canceled
       =resourcelist         responce of a repeated request
       =                     +, =, % or # command is accepted
       %                     a = command is broke by %
       @scope                return the @ result
-      *resourcelist         request canceled
+      *resourcelist         repeated request canceled
       -                     resource accepted
       #                     illegal command
       :                     : or brackets accepted, ready for the next commands
@@ -96,42 +96,89 @@ while if [ "$endoption" = "1" ]||{
     "")addres "$arg";;
   esac
 done
+#参数读入完毕
 
-get_varname(){
-#get_varname string[@]
-resultstr=()
-for varnameitem; do
-{ resultstr[${#resultstr[@]}]="
-`od -vtx1 -N "${#varnameitem}"` ";} <<<"$varnameitem"
-done
-local IFS=_
-{ resultstr=("`cut -b 9-`");} <<<"${resultstr[*]}"
-resultstr="${resultstr//[
-\ ]}"
+shopt -s extglob
+hash basename &>/dev/null
+hash dirname &>/dev/null
+[ "$LOWSARS_LIBDIR" = "" ]&&{
+LOWSARS_LIBDIR="`dirname -- "$0"`/"
+[ "${0:0:1}" = "/" ]||LOWSARS_LIBDIR="$PWD/$LOWSARS_LIBDIR"
+LOWSARS_LIBDIR="${LOWSARS_LIBDIR//\/+(.\/)//}"
+while t="`basename -- "$LOWSARS_LIBDIR"`"; [ "$t" = ".." ]
+  do LOWSARS_LIBDIR="${LOWSARS_LIBDIR//\/!(..|*\/*)+(\/)..+(\/)//}"; done
+  #slow
+case "$t" in
+  bin|sbin)LOWSARS_LIBDIR="`dirname -- "$LOWSARS_LIBDIR"`/share/lowsars";;
+esac
+}
+LOWSARS_LIBDIR="$LOWSARS_LIBDIR/"
+LOWSARS_LIBDIR="${LOWSARS_LIBDIR//+(\/)//}"
+
+. "$LOWSARS_LIBDIR/database.sh"
+#the data management module
+#with function:
+# db_add dir count path, returns final id in NODEID
+# db_query dir count path
+# db_link dir1 dir2, or db_link dir1 "" name
+# db_clean (void)
+# get_varname list[@], returns varname in varname
+
+db_link 0 "" _scope
+db_link 0 "" _queue
+# _trap_in and _trap_out for each item
+# and _init _data for lowsars-input(yysh)
+
+checktrap(){
+
 }
 
-#namespace: lowsars_db_avail_$resultstr: available; lowsars_db_count_$resultstr: all
-#  (?) lowsars_db_total_$resultstr: all subs
-#  lowsars_db_query_$resultstr: queried; lowsars_db_query(): queries
+#命令处理部分
+request_wait() if
+#+resourcelist
+local list extrapath
+read -a list<<<"$1"
+((excludecount))&&checktrap "${list[@]}
+  then
+elif checktrap _scope "${scope[@]}"
+  then echo "?"
+elif db_query "${list[@]}"
+  then echo "+${extrapath[@]}"
+elif db_setouttrap "${list[@]}"
+  then echo "="
+fi >"$file"
 
-db_clean(){
-unset "${!lowsars_db_@}"
-}
+request_nowait() if
+#?resourcelist
+local list extrapath
+read -a list<<<"$1"
+db_checkouttrap "${list[@]}"
+  then echo "?"
+elif db_query "${list[@]}"
+  then echo "+${extrapath[@]}"
+else
+  echo "?"
+fi >"$file"
 
-db_add(){
-get_varname "$@"
-((++lowsars_db_avail_$resultstr>lowsars_db_count_$resultstr&&lowsars_db_count_$resultstr=lowsars_db_avail_$resultstr))
-}
+request_repeated() if
+#=resourcelist
+local list extrapath
+read -a list<<<"$1"
+db_checkouttrap "${list[@]}"
+  then echo "?"
+elif db_setouttrap "${list[@]}"
+  then echo "="
+fi >"$file"
 
-db_query(){
-get_varname "$@"
-if ((lowsars_db_avail_$resultstr))
-  then queryresult="$resultstr"
-elif
-"${!lowsars_db_avail_$resultstr_@}"
-
-}
-
+release_auto() if
+#-resourcelist
+local list
+read -a list<<<"$1"
+db_checkintrap "${list[@]}"
+  then echo "-"
+elif db_add "${list[@]}"
+  then echo "-"
+fi
 
 while echo -n .; IFS=; read -r; do
   prefix=".${REPLY%%["$spechars/"]*}"
@@ -171,14 +218,14 @@ while echo -n .; IFS=; read -r; do
   while [ "$commandchar" != "" ]&&{
     scopebegin=0
     case "$commandchar" in
-      "+")((disablecount))||request_wait $commandcontent;;
-      "?");;
-      "=");;
+      "+")((disablecount))||request_wait "$commandcontent";;
+      "?")((disablecount))||request_nowait "$commandcontent";;
+      "=")((disablecount))||request_repeated "$commandcontent";;
       "%");;
       "@");;
       "*");;
-      "-");;
-      "#");;
+      "-")((disablecount))||release_auto "$commandcontent";;
+      "#")((disablecount))||echo "=";;
       ":")if ! [ "$commandcontent" -eq "$commandcontent" ] 2>/dev/null
           then echo "#" >>"$file"
         elif ((justread))&&echo ":" >>"$file"; scopebegin=1

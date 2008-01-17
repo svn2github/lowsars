@@ -58,9 +58,9 @@ for i in "${@:3}"; do
   }
   #(((lowsars_db__sum[cur2=cur]+=$2)==$2&&$2&&(lowsars_db__avail_$cur2[lowsars_db__avail_[cur]=lowsars_db__avails[$cur2]++]=cur)))
 done
-for ((i=cur;lowsars_db__sum[i]+=$2,j=lowsars_db__parent[i],lowsars_db__factor[i];i=j))
-  do (($2&&lowsars_db__sum[i]==$2&&(lowsars_db__avail_$j[lowsars_db__avail_[i]=lowsars_db__avails[j]++]=i))); done
-((lowsars_db__sum[0]+=$2,(t=(lowsars_db__count[cur]+=$2)-lowsars_db__max[cur])>0))&&
+(($2))&&for ((i=cur;lowsars_db__sum[i]+=$2,j=lowsars_db__parent[i],lowsars_db__factor[i];i=j))
+  do ((lowsars_db__sum[i]==$2&&(lowsars_db__avail_$j[lowsars_db__avail_[i]=lowsars_db__avails[j]++]=i))); done
+(((t=(lowsars_db__count[cur]+=$2)-lowsars_db__max[cur])>0))&&
   for ((i=cur;lowsars_db__max[i]+=t,i;i=lowsars_db__parent[i])); do :; done
 NODEID="$cur"
 }
@@ -81,16 +81,25 @@ extrapath=()
 NODEID="$cur"
 ((lowsars_db__sum[cur]>=$2))&&{
 while ((lowsars_db__count[cur]<$2))
-  do extrapath[${#extrapath[@]}]=${lowsars_db_name[cur=lowsars_db__avail_$cur[RANDOM*lowsars_db_avails[$cur]/RANDOM_SIZE]]}; done
+  do extrapath[${#extrapath[@]}]=${lowsars_db__name[cur=lowsars_db__avail_$cur[RANDOM*lowsars_db_avails[$cur]/RANDOM_SIZE]]}; done
 ENODEID="$cur"
-for ((lowsars_db__sum[0]-=$2,lowsars_db__count[i=cur]-=$2;j=lowsars_db__parent[i],lowsars_db__factor[i];i=j))
-  do (((lowsars_db__sum[i]-=$2)||lowsars_db__avail_[lowsars_db__avail_$j[lowsars_db__avail_[i]]=lowsars_db__avail_$j[--lowsars_db__avails[j]]]=lowsars_db__avail_[i])); done
+(($2))&&for ((lowsars_db__count[i=cur]-=$2;j=lowsars_db__parent[i],lowsars_db__factor[i];i=j))
+  do (((lowsars_db__sum[i]-=$2)||(lowsars_db__avail_[lowsars_db__avail_$j[lowsars_db__avail_[i]]=lowsars_db__avail_$j[--lowsars_db__avails[j]]]=lowsars_db__avail_[i]))); done
 :;}
 }
 
 #an advanced algorithm assigning resource for both cpu and memory still required
 
 db_link(){
+#db_link id1 id2 [name]
+#should add path support
+local newid="${2-$((lowsars_db__maxid++))}"
+[ "$2" = "" ]&&{
+  lowsars_db__name[newid]="$3"
+  lowsars_db__parent[newid]="-1"
+  lowsars_db__factor[newid]=0
+}
+((lowsars_db_$1_${lowsars_db__name[newid]}=newid))
 :
 }
 
