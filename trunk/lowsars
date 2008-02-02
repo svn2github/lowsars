@@ -358,7 +358,7 @@ for ct in $ctls; do
       else
         echo "No compile." >&3
       fi
-      cp $exefn testing/ >&3 2>&3
+      cp $exefn ./ >&3 2>&3
       for ((csgpid=1;csgpid<=csgroups[probid];csgpid++)) do
          echo "Entering Gpid $csgpid..." >&3
          for ((csid=csbegin[probid*mazcsgp+csgpid];csid<=csend[probid*mazcsgp+csgpid];csid++)) do
@@ -368,6 +368,7 @@ for ct in $ctls; do
             #准备i/o文件列表、从数组中获取信息
             inf4prog=${inf[probid]}
             outf4prog=${outf[probid]}
+	    pwd
             echo "Infile for program: $inf4prog"
             echo "Outfile for program: $outf4prog"
             inf4data=${infcsg[$probid*$mazcsgp+$csgpid]//#/$csid}
@@ -385,8 +386,10 @@ for ct in $ctls; do
                inf4test="$inf4test -I $i1 $i2"
             done
             echo "Infile list for testing:  $inf4test"
-            echo "Calling lowsars-test $exefn $inf4test -O $outf4prog $outf4data -t$timelimit -m$memlimit --score=$score --real-time"
-            resstr=`lowsars-test $exefn $inf4test -O $outf4prog $outf4data -t$timelimit -m$memlimit --score=$score --real-time`
+	    echo "\$exefn" $exefn
+	    baseexefn=`basename "$exefn"`
+            echo "Calling lowsars-test ./$baseexefn $inf4test -O $outf4prog $outf4data -t$timelimit -m$memlimit --score=$score --real-time"
+            resstr=`lowsars-test ./$baseexefn $inf4test -O $outf4prog $outf4data -t$timelimit -m$memlimit --score=$score --real-time`
             if [ "$resstr" = "" ]; then
                resstr="0 0 Unknown Tester Error $?
                "
