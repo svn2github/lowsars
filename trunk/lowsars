@@ -177,7 +177,7 @@ while [ $comm != end ] ; do
             inf[$prob]=$para
             echo "input file for prob $prob ${probname[prob]} : ${inf[prob]}" >&3
           else
-            para=data/$para
+            para=../data/$para
             infcsg[$prob*$mazcsgp+$csgroup]=$para
             echo "input file for csgp $csgroup of prob $prob ${probname[prob]} : ${infcsg[$prob*$mazcsgp+$csgroup]}" >&3
           fi;;
@@ -187,7 +187,7 @@ while [ $comm != end ] ; do
             outf[$prob]=$para
             echo "output file for prob $prob ${probname[prob]} : ${outf[prob]}" >&3
           else
-            para=data/$para
+            para=../data/$para
             outfcsg[$prob*$mazcsgp+$csgroup]=$para
             echo "output file for csgp $csgroup of prob $prob ${probname[prob]} : ${outfcsg[$prob*$mazcsgp+$csgroup]}" >&3
           fi;;
@@ -355,10 +355,11 @@ for ct in $ctls; do
         rm $exefn >&3 2>&3
         echo "Compile..." >&3
         lowsars-test $exefn -C* -t0 --real-time >&3 2>&3 #use lowsars-test to compile
+        rm $exefn.o
       else
         echo "No compile." >&3
       fi
-      cp $exefn ./ >&3 2>&3
+      mv $exefn testing/ >&3 2>&3
       for ((csgpid=1;csgpid<=csgroups[probid];csgpid++)) do
          echo "Entering Gpid $csgpid..." >&3
          for ((csid=csbegin[probid*mazcsgp+csgpid];csid<=csend[probid*mazcsgp+csgpid];csid++)) do
@@ -368,6 +369,7 @@ for ct in $ctls; do
             #准备i/o文件列表、从数组中获取信息
             inf4prog=${inf[probid]}
             outf4prog=${outf[probid]}
+	    cd testing
 	    pwd
             echo "Infile for program: $inf4prog"
             echo "Outfile for program: $outf4prog"
@@ -390,6 +392,7 @@ for ct in $ctls; do
 	    baseexefn=`basename "$exefn"`
             echo "Calling lowsars-test ./$baseexefn $inf4test -O $outf4prog $outf4data -t$timelimit -m$memlimit --score=$score --real-time"
             resstr=`lowsars-test ./$baseexefn $inf4test -O $outf4prog $outf4data -t$timelimit -m$memlimit --score=$score --real-time`
+            cd ..
             if [ "$resstr" = "" ]; then
                resstr="0 0 Unknown Tester Error $?
                "
