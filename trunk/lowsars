@@ -96,7 +96,7 @@ ctls=
 probls=
 cfgfn=
 #读取命令行参数
-while if ! getopts :qcpndDvCP-: param
+while if ! getopts :qcpndDvCrP-: param
   then param=""; arg=${!OPTIND}; ((OPTIND++<=$#))
   elif [ "$param" = "-" ]; then
     param="--${OPTARG%%=*}"
@@ -140,7 +140,8 @@ while if ! getopts :qcpndDvCP-: param
   #shift 1
 done
 if [ ! -e "$cfgfn" ]; then
-   gettext "File not found: "
+   [ "$cfgfn" = "" ]|| gettext "File not found: "
+   [ "$cfgfn" = "" ]&& gettext "No input file specified. "
    echo $cfgfn
    echo "Try --help"
    exit 1
@@ -316,11 +317,13 @@ date > "$notdone"
 rm -R testing
 if [ "$isremove" = 1 ]; then
    for ct in $ctls; do
-      for prob in $probls; do
-         echo "Removing $uniform/$ct/$probls"
-         rm "$uniform/$ct/$probls"
+      for probid in $probls; do
+         $prob=${probname[$prob]}
+         echo "Removing $uniform/$ct/$prob"
+         rm "$uniform/$ct/$prob"
       done
    done
+   rm $notdone
    exit
 # TODO: what to do with other result files??
 fi

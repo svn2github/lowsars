@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lowsars 0.2 alpha\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-01-14 21:11+0800\n"
+"POT-Creation-Date: 2008-02-04 21:12+0800\n"
 "PO-Revision-Date: 2008-01-14 21:09+0800\n"
 "Last-Translator: Liu Sizhuang(刘思壮) <chinatslsz@hotmail.com>\n"
 "Language-Team: Chinese/Simplified <i18n-translation@lists.linux.net.cn>\n"
@@ -17,43 +17,48 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../lowsars:122
+#: ../lowsars:124 ../lowsars~:124
 msgid "No such parameter:"
 msgstr "没有这样的参数:"
 
-#: ../lowsars:134
+#: ../lowsars:136 ../lowsars~:136
 msgid "something not used: "
 msgstr "没有使用的: "
 
-#: ../lowsars:141
+#: ../lowsars:143 ../lowsars~:143
 msgid "File not found: "
 msgstr "文件未找到: "
 
-#: ../lowsars:148
+#: ../lowsars:144
+#, fuzzy
+msgid "No input file specified. "
+msgstr "没有指定输入文件"
+
+#: ../lowsars:151 ../lowsars~:150
 msgid "Lightweight OI Wonderful Scoring And Ranking System"
 msgstr "轻量级OI奇妙的评测系统"
 
-#: ../lowsars:240
+#: ../lowsars:243 ../lowsars~:242
 msgid "No such command in config file:"
 msgstr "配置文件中没有此命令:"
 
-#: ../lowsars:365
+#: ../lowsars:381 ../lowsars~:379
 msgid "Testing "
 msgstr "正在测试 "
 
-#: ../lowsars:407
+#: ../lowsars:428 ../lowsars~:426
 msgid "s"
 msgstr "秒"
 
-#: ../lowsars:407
+#: ../lowsars:428 ../lowsars~:426
 msgid "Score: "
 msgstr "得分: "
 
-#: ../lowsars:414 ../lowsars:421
+#: ../lowsars:435 ../lowsars:442 ../lowsars~:433 ../lowsars~:440
 msgid "Total score for %1 : %2"
 msgstr "%1 的总分: %2"
 
-#: ../lowsars:428
+#: ../lowsars:449 ../lowsars~:447
 msgid "Judging ended at: "
 msgstr "评测结束时间: "
 
@@ -77,9 +82,6 @@ msgstr "评测结束时间: "
 
 #~ msgid "Wrong Answer."
 #~ msgstr "答案错误"
-
-#~ msgid "No output file."
-#~ msgstr "无输出文件"
 
 #~ msgid "Name "
 #~ msgstr "姓名 "
