@@ -1,0 +1,8 @@
+problem  game
+    input  game.in
+    output  game.out
+    cases  1  10
+        input  game/game#.in
+        output  game/game#.out
+      timelimit  1
+end

@@ -52,6 +52,7 @@ CONFIGFILE EXAMPLE:
 X-d, --generate-data                Use the standard program to generate data
 X-D, --add                          Do not overide the existing result
  -n, --no-compile                   Do not compile
+ -r, --remove                       Remove the result, for use with -c or -p
  -p, --problems [PROBLEMS]          Only judge problems in the list
  -P, --get-problems                 No judging, only to get a problems list
  -q, --quiet                        Be quiet
@@ -116,6 +117,7 @@ while if ! getopts :qcpndDvCP-: param
     -n|--no-compile) tocompile=0;;
     -d|--generate-data) isdata=1;;
     -v|--verbose) verbose=/dev/stderr;;
+    -r|--remove) isremove=1;;
     -C|--get-contestants) onlyc=1 header=/dev/null;;
     -P|--get-problems) onlyp=1 header=/dev/null;;
     #-*) echo `gettext "No such parameter:"` $1 1>&2;;
@@ -312,6 +314,16 @@ rm -R "$olduniform"
 mymkdir "$uniform"
 date > "$notdone"
 rm -R testing
+if [ "$isremove" = 1 ]; then
+   for ct in $ctls; do
+      for prob in $probls; do
+         echo "Removing $uniform/$ct/$probls"
+         rm "$uniform/$ct/$probls"
+      done
+   done
+   exit
+# TODO: what to do with other result files??
+fi
 mkdir testing && echo "testing dir. created"
 
 a='"Uniform" format, no i18n:
