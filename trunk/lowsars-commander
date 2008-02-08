@@ -1,5 +1,5 @@
 #!/bin/bash
-# lowsars-commander: resource manager for lowsars
+# lowsars-commander: resource manager for lowsars(lowbase)
 # Copyright © 2007 Yu Hang, released under GNU General Public License Version 2 or later
 
 show_version(){ echo "lowsars-commander 0.2.0 alpha"; }
@@ -11,9 +11,11 @@ echo "Usage: $commandername [--] [RESOURCELIST]...
   -n, --no-file             do not use files other than fd
       --help                display this help and exit
       --version             output version information and exit
-the resourcelist format: type[*[number]][{resourcelist}][;resourcelist]
+the resourcelist format: resource[;resourcelist]
+  where resource is: type[*[number]][ resource|{resourcelist}]
 number is 1 by default, but if only a * character is specified, it means a
   infinite number of this resource
+*in the current version only a space separated path format implemented
 each time, $commandername will put one dot character in stdout, and read a
   single line from input, with format [scope.]...[path//|pid[/fd]]command
 scope can contain anything except ., / and the following commands, alphanumerics
@@ -23,7 +25,6 @@ command is one of the following:
       ?resourcelist         request resource, break if unavailable
       =resourcelist         repeatedly request resource with highest priority
       %[prefix]             give failure to each request with this scope
-      @[prefix]             return a random unused scope or subscope name
       *resourcelist         cancel a +,= or % command
       -resourcelist         release or add resource
       #                     do nothing, return = when this command is parsed
@@ -33,9 +34,9 @@ command is one of the following:
                               character can be followed by another command
       [                     same as above but the matching character is ], and
                               do not assign other waited resources until all
-                              commands read
+                              commands parsed
       (                     same as above but the matching character is ), and
-                              do not assign any resources until everything done
+                              do not add new resources until everything done
 a blank line terminates the session
 if SIGTERM is captured, it is equal to command % and set -s
 SIGUSR1 and SIGUSR2 will set and unset -s option
@@ -45,7 +46,6 @@ $commandername will write one of the following to the specified path or fd:
       =resourcelist         responce of a repeated request
       =                     +, =, % or # command is accepted
       %                     a = command is broke by %
-      @scope                return the @ result
       *resourcelist         repeated request canceled
       -                     resource accepted
       #                     illegal command
@@ -93,7 +93,7 @@ while if [ "$endoption" = "1" ]||{
     -\?)err_unrecog;;
     -:)err_argreq;;
     --*|-*)err_unrecog;;
-    "")addres "$arg";;
+    "")addres "$arg";; #Stub
   esac
 done
 #参数读入完毕
@@ -102,7 +102,8 @@ shopt -s extglob
 hash basename &>/dev/null
 hash dirname &>/dev/null
 [ "$LOWSARS_LIBDIR" = "" ]&&{
-LOWSARS_LIBDIR="`dirname -- "$0"`/"
+[ "${0#*/}" = "$0" ]&&LOWSARS_LIBDIR="`which -- "$0"`"
+LOWSARS_LIBDIR="`dirname -- "${LOWSARS_LIBDIR:-0}"`/"
 [ "${0:0:1}" = "/" ]||LOWSARS_LIBDIR="$PWD/$LOWSARS_LIBDIR"
 LOWSARS_LIBDIR="${LOWSARS_LIBDIR//\/+(.\/)//}"
 while t="`basename -- "$LOWSARS_LIBDIR"`"; [ "$t" = ".." ]
@@ -126,68 +127,119 @@ LOWSARS_LIBDIR="${LOWSARS_LIBDIR//+(\/)//}"
 
 db_link 0 "" _scope
 db_link 0 "" _queue
-# _trap_in and _trap_out for each item
+# _trap_pre_in _trap_pre_out _trap_after_out _trap_after_in and _trap_missing for each item
 # and _init _data for lowsars-input(yysh)
+#use a link and a next pointer in queue elements
 
-checktrap(){
-
-}
+#queue structure(easy version):
+# _scope scope _traps nodeid _trap_type file
+# (nodeid) _trap_type trapid
+# _queue trapid
 
 #命令处理部分
+#external liberaries should be possible, use command ~xx:param
+checktrap(){
+#checktrap base type path
+#return true if made status change by trap
+local ENODEID RNODEID extrapath
+db_check "$@"&&db_query "$RNODEID" 1&&{ case "$2" in
+  _trap_pre_out)[ ];; #cleaner
+  _trap_after_out)[ ];; #monitor
+  _trap_missing)[ ];; #chain assigner
+  _trap_pre_in)[ ];; #cleaner
+  _trap_after_in) #trap assigner
+    if ((excludecount))
+      then [ ] #another resource-in queue stub
+      else db_add 0 1 _queue "$extrapath"
+      #for waited trap, repeated trap should be added
+    fi;;
+  _trap_pre_request)[ ];; #scope cleaner, confused to use trap_pre_out
+  _trap_pre_release)[ ];; #scope monitor
+esac||! db_add "$ENODEID" 1;}
+}
+
+flushtraps() while
+#send answers for previously waited requests
+local extrapath NODEID ENODEID RNODEID resulttext IFS=" 	"$'\12'
+db_query 0 1 _queue; do
+  db_check "$extrapath"
+  #get the reversed path after _traps (filename type nodeid)
+  restore_text "$extrapath"
+  db_query "${extrapath[2]}" 1&&{
+    db_check "$ENODEID"
+    #get the reversed path of requested data
+    { echo =`tac -s " "`;} >>"$resulttext" <<<"${extrapath[@]:0:${#extrapath[@]}-1}"
+  }
+done
+
 request_wait() if
 #+resourcelist
-local list extrapath
+local list extrapath IFS=" 	"$'\12' varname
 read -a list<<<"$1"
-((excludecount))&&checktrap "${list[@]}
-  then
-elif checktrap _scope "${scope[@]}"
+checktrap {0,_trap_pre_out} "${list[@]}"||checktrap {0,_trap_pre_request} _scope "${scope[@]}"
+  #check out trap and scope out trap, {,} for highlighting
   then echo "?"
-elif db_query "${list[@]}"
+elif if ! db_query 0 1 "${list[@]}"; then
+  checktrap {0,_trap_missing} "${list[@]}"&&db_query 0 1 "${list[@]}";fi
+  #available or trap-made available
   then echo "+${extrapath[@]}"
-elif db_setouttrap "${list[@]}"
+  checktrap {0,_trap_after_out} "${list[@]}" "${extrapath[@]}"
+elif local a b;db_add 0 0 "${list[@]}";a="$NODEID" #NODEID>a
+  db_link "$a" "" _trap_after_in
+  #locate the data node
+  db_add 0 0 _scope "${scope[@]}"
+  db_link "$NODEID" "" _traps
+  get_varname "$file"
+  db_add "$NODEID" 1 "$a" _trap_after_in "$varname"
+  #add scope trap info
+  db_add "$a" 1 _trap_after_in "$NODEID"
+  #link to trap
   then echo "="
-fi >"$file"
+fi >>"$file"
 
 request_nowait() if
 #?resourcelist
-local list extrapath
+local list extrapath IFS=" 	"$'\12'
 read -a list<<<"$1"
-db_checkouttrap "${list[@]}"
+checktrap {0,_trap_pre_out} "${list[@]}"||checktrap {0,_trap_pre_request} _scope "${scope[@]}"
   then echo "?"
-elif db_query "${list[@]}"
+elif if ! db_query 0 1 "${list[@]}"; then
+  checktrap {0,_trap_missing} "${list[@]}"&&db_query 0 1 "${list[@]}";fi
   then echo "+${extrapath[@]}"
+  checktrap {0,_trap_after_out} "${list[@]}" "${extrapath[@]}"
 else
   echo "?"
-fi >"$file"
+fi >>"$file"
 
 request_repeated() if
 #=resourcelist
-local list extrapath
+local list extrapath IFS=" 	"$'\12'
 read -a list<<<"$1"
-db_checkouttrap "${list[@]}"
+checktrap {0,_trap_pre_out} "${list[@]}"||checktrap {0,_trap_pre_request} _scope "${scope[@]}"
   then echo "?"
-elif db_setouttrap "${list[@]}"
+elif db_setintrap "${list[@]}" #Stub
   then echo "="
-fi >"$file"
+fi >>"$file"
 
 release_auto() if
 #-resourcelist
-local list
+local list IFS=" 	"$'\12'
 read -a list<<<"$1"
-db_checkintrap "${list[@]}"
+checktrap {0,_trap_pre_in} "${list[@]}"||checktrap {0,_trap_pre_release} _scope "${scope[@]}"
+  then echo "?"
+elif db_add 0 1 "${list[@]}"
   then echo "-"
-elif db_add "${list[@]}"
-  then echo "-"
-fi
+  checktrap {0,_trap_after_in} "${list[@]}"
+fi >>"$file"
 
 while echo -n .; IFS=; read -r; do
-  prefix=".${REPLY%%["$spechars/"]*}"
+  prefix="${REPLY%%["$spechars/"]*}"
   IFS=.
   scope=($prefix)
-  commandchar="${REPLY:${#prefix}-1:1}"
-  commandcontent="${REPLY:${#prefix}}"
+  commandchar="${REPLY:${#prefix}:1}"
+  commandcontent="${REPLY:${#prefix}+1}"
   file=
-  if [ "${prefix: -1}" = "." ]
+  if [ "${prefix%.}" = "${prefix%?}" ]
     then [ "$commandchar" = "/" ]&&{
       [ "$enablefile" = "0" ]&&continue
       file="/${commandcontent%%//*}"
@@ -195,37 +247,39 @@ while echo -n .; IFS=; read -r; do
       commandcontent="${commandcontent:${#file}+2}"
     }
   elif pid="${scope[${#scope[@]}-1]}"; unset scope[${#scope[@]}-1]
-    [ "$pid" -eq "$pid" ] 2>/dev/null||continue
+    [ "$pid" -eq "$pid" ] 2>/dev/null||{ echo "#illegal pid" >&2;continue;}
     #test if it is an integer, hexadecimal not supported, sorry
     ((pid=pid))
     #convert to decimal
     [ "$commandchar" = "/" ]
     then fd="${commandcontent%%[!0-9]*}"
-      [ "$fd" -eq "$fd" ] 2>/dev/null||continue
+      [ "$fd" -eq "$fd" ] 2>/dev/null||{ echo "#illegal fd name" >&2;continue;}
       ((fd=fd))
       file="/proc/$pid/fd/$fd"
       commandchar="${commandcontent:${#fd}:1}"
       commandcontent="${commandcontent:${#fd}+1}"
     else file="/proc/$pid/fd/$defaultfd"
   fi
+  : >> "$file"||{ echo "#could not access output file" >&2; file="/dev/stderr";}
+  #no grammer error, should ignore and at least wait input to end
   brackets=()
   cache=()
   cacheind=0
-  repeatcount=0
-  disablecount=0
-  justread=1
-  excludecount=0
+  repeatcount=0 #:
+  disablecount=0 #:0
+  justread=1 #not in a earlier loop
+  excludecount=0 #[]
   while [ "$commandchar" != "" ]&&{
+    IFS=" "
     scopebegin=0
     case "$commandchar" in
       "+")((disablecount))||request_wait "$commandcontent";;
       "?")((disablecount))||request_nowait "$commandcontent";;
       "=")((disablecount))||request_repeated "$commandcontent";;
       "%");;
-      "@");;
       "*");;
       "-")((disablecount))||release_auto "$commandcontent";;
-      "#")((disablecount))||echo "=";;
+      "#")((disablecount))||echo "=" >>"$file";;
       ":")if ! [ "$commandcontent" -eq "$commandcontent" ] 2>/dev/null
           then echo "#" >>"$file"
         elif ((justread))&&echo ":" >>"$file"; scopebegin=1
@@ -248,7 +302,8 @@ while echo -n .; IFS=; read -r; do
       #"")continue;;
       *)[ "$file" = "" ]||echo "#" >>"$file";;
     esac
-    [ "$scopebegin" = "0" ]&&while [ "${#brackets[@]}" != "0" ]&&[ "${brackets[${#brackets[@]}-1]:0:2}" = "0:" ]; do
+    flushtraps
+    ((scopebegin))||while [ "${#brackets[@]}" != "0" ]&&[ "${brackets[${#brackets[@]}-1]:0:2}" = "0:" ]; do
       case "${brackets[${#brackets[@]}-1]: -1}" in
         "-")((disablecount--));;
         "+");;
@@ -266,10 +321,12 @@ while echo -n .; IFS=; read -r; do
       brackets[${#brackets[@]}-1]="$((${brackets[${#brackets[@]}-1]%:*}-1)):$t";;
     esac
     if ((justread=cacheind>=${#cache[@]})); then
-      IFS=
-      read -rn 1 commandchar
-      [ "$commandchar" = "" ]||read -r commandcontent
-      [ "$repeatcount" = "0" ]||[ "$disablecount" != "0" ]||cache[cacheind++]="$commandchar$commandcontent"
+      IFS=" " #leaving it blank will cause some problem on read
+      read -r
+      commandchar="${REPLY:0:1}"
+      commandcontent="${REPLY:1}"
+      #there is some problem on read -rn1 with input from tty
+      [ "$repeatcount" = "0" ]||[ "$disablecount" != "0" ]||cache[cacheind++]="$REPLY"
     else
       commandchar="${cache[cacheind]:0:1}"
       commandcontent="${cache[cacheind]:1}"
