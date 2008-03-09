@@ -13,7 +13,9 @@ shopt -s extglob
 hash basename &>/dev/null
 hash dirname &>/dev/null
 [ "$LOWSARS_LIBDIR" = "" ]&&{
-LOWSARS_LIBDIR="`dirname -- "$0"`/"
+[ "${0#*/}" = "$0" ]&&LOWSARS_LIBDIR="`which -- "$0"`"
+  #this occurs if this script is called in some special way, for example using valgrind
+LOWSARS_LIBDIR="`dirname -- "${LOWSARS_LIBDIR:-$0}"`/"
 [ "${0:0:1}" = "/" ]||LOWSARS_LIBDIR="$PWD/$LOWSARS_LIBDIR"
 LOWSARS_LIBDIR="${LOWSARS_LIBDIR//\/+(.\/)//}"
 while t="`basename -- "$LOWSARS_LIBDIR"`"; [ "$t" = ".." ]
@@ -97,6 +99,9 @@ echo "${bigcache[*]}"
 #"
 #read -d \\ -a lines
 }<<<"Usage: $testername PROGRAM [INPUT ...] [ANSWER]
+* -5, --killall-user             use killall5 to kill every program of the user
+                                   when done, it will refuse to do so if you
+                                   did not specify -u or specified the superuser
 * -a, --case=caseid              automatically generate filenames of the case
   -A, --allow-stdin              allow stdin, turn off caching and disable
                                    killing, same as -SrRk off, if you don't
@@ -107,7 +112,7 @@ echo "${bigcache[*]}"
                                    the ceiling integer of result of this
                                    argument will be used, off by default
 * -b, --batch-test               set --uniform-result and -e,
-                                   lock -u -d -X -v -q --cpu
+                                   lock -u -d -X -v -q --cpu --process
                                    and make the current -c -m -t -o maximum
 * -B, --background-judge         run the judge together with tested program,
                                    create a pipe between program's output and
@@ -186,6 +191,7 @@ echo "${bigcache[*]}"
   -L, --log-stderr=filename      write stderr to file, note that these files
                                    can be accessed by the judge program
 *     --leave-input              do not delete or count next input for --clean
+* -M, --manual-test
   -m, --memory-limit=size        specify the total memory limit in kilobytes
 *     --make                     compile the program with make
 *     --md5-judge                set -j \"md5sum -c --status %a\"
@@ -205,9 +211,11 @@ echo "${bigcache[*]}"
 *     --output-pipe=file         create a pipe between output and file
   -p, --plain-check              do not run the program, just check the answer
   -P, --parameters=string        specify extra parameters passed to program
+*     --password-file=file       read user password from the file, for -u -U
 *     --pipe                     the next file should be created as a pipe,
                                    usually used with --background-input
-*     --process=number           the maximum process count of tested program
+      --process=number           the process limit, should be used together
+                                   with -u, or it will be something unwanted
 * -Q, --quick-test               set --show-stdout --show-stderr --show-output
   -r, --redirect-input           specify if the next file redirected to stdin,
                                    similar to -I
@@ -245,8 +253,9 @@ echo "${bigcache[*]}"
   -T, --judge-text               use text judge has written to stdout as result
 *     --translate-detail=string  specify column names of detailed judge result,
                                    and translate it to what this program used
-* -u, --user=username            test using the specified user, password read
-                                   from stdin, should be before any -b or -e
+  -u, --user=username            test using the specified user, using sudo
+* -U, --login=username           test using the specified user, each time the
+                                   password is needed
       --uniform-result           print result even if there are grammer errors,
                                    and disable --help, --version --info --cow
                                    and --say-only, give score to --get-fortune
@@ -269,6 +278,7 @@ echo "${bigcache[*]}"
       --help                     display this help and exit
       --version                  output version information and exit
 *not implemented features, should be implemented or removed in formal release
+parameters in LOWSARS_PARAMS will be parsed before the command line
 each parameter following -- and a space will not be taken as an option
 anything unexpected write to stdout will be redirected to stderr
 and fd's from 3 to 9 may be blocked in some places, so don't use that
@@ -324,6 +334,7 @@ case "$1" in
    #check on reading parameters needed
   8)msg="illegal size";;
   9)msg="illegal cpu mask";;
+  33)msg="usage of killall5 in non-protected user not allowed";;
   97)msg="error during input data generation";;
   98)msg="could not access the working directory";;
   161)msg="the judge program exited abnomally";;
@@ -435,7 +446,7 @@ if (($1<-64)); then
   echo "$score ${judgetime:-0.000} $msg"
   printf %s\\n "$judgedetail"
   #better plainecho alternative than cat<<<, it can't handle \0 character, but the bash variables can't handle as well
-  exit $(($1>-225))
+  exit $(($1>-209))
 elif msg="$msg${3:+": "}$3"
   [ "$returnonerror" = "1" ]; then
   echo -n "$score ${judgetime:-0.000} "
@@ -501,7 +512,8 @@ echo $exitcode 1>&10
   [ "$killwaitproc" = "-" ]; then echo
   else echo ", now killing timewait processes..."
 fi 1>&6 2>&6
-[ "$killwaitproc" = "-" ]||[ "$killwaitproc" = "" -a "$lastbgproc" = "$!" ]||{ kill "${killwaitproc:-$!}"; wait "${killwaitproc:-$!}"; } 1>&6 2>&6
+[ "$killwaitproc" = "-" ]||[ "$killwaitproc" = "" -a "$lastbgproc" = "$!" ]||{ kill -hup "${killwaitproc:-$!}"; wait "${killwaitproc:-$!}"; } 1>&6 2>&6
+#sigterm sometimes may be ignored, but how about hup?
 
 #close output files and wait output writting program to finish
 exec 8>&- 9>&-
@@ -581,11 +593,11 @@ trap 'skiprun2=1; killed=1; [ "$testproc" = "-" ]||[ "$lastbgproc" = "$!" ]||kil
 lastbgproc="$!"
 killwaitproc=
 (lastbgproc="$!"
-trap '[ "$lastbgproc" = "$!" ]||kill "$!"; exit' sigterm
-#sigterm by default is exit directly
+trap '[ "$lastbgproc" = "$!" ]||kill -term "$!"; exit' sigterm sighup
+#sigterm by default is exit directly(wrong, and this line may be obsolete, using sighup now)
 [ "$skiprun" = "1" ]&&exit
 #if got sigint before this subshell begin
-sleep $killtime&wait $!&&kill -alrm $$ 2>&6
+sleep $killtime&wait $!&&"${killcommand[@]}" 2>&6
 ) 1>&6 2>&6 8>&7 9>&7 4>&7 3>&7 &
 killwaitproc="$!"
 } 1>&6 2>&6
@@ -596,16 +608,18 @@ testproc=
 #I don't know why, sigint fails here
 [ "$skiprun" = "1" ]||[ "$skiprun2" = "1" ]&&{ skiprun; exit;}
 TIMEFORMAT="%3R %3U %3S"
-echo "Setting limitations: -St $alarmtime -Ht $maxruntime -v $memorylimit -f $outputlimit" >&6
-[ "$alarmtime" = "off" ]||ulimit -St "$alarmtime" 1>&6 2>&6
-[ "$maxruntime" = "off" ]||ulimit -Ht "$maxruntime" 1>&6 2>&6
-[ "$memorylimit" = "off" ]||ulimit -v "$memorylimit" 1>&6 2>&6
-[ "$outputlimit" = "off" ]||ulimit -f "$outputlimit" 1>&6 2>&6
+echo "Setting limitations: -u $processlimit -St $alarmtime -Ht $maxruntime -v $memorylimit -f $outputlimit" >&6
+[ "$processlimit" = "off" ]||ulimit -u "$processlimit"
+[ "$alarmtime" = "off" ]||ulimit -St "$alarmtime"
+[ "$maxruntime" = "off" ]||ulimit -Ht "$maxruntime"
+[ "$memorylimit" = "off" ]||ulimit -v "$memorylimit"
+[ "$outputlimit" = "off" ]||ulimit -f "$outputlimit"
 wait #should not happen, but if happen, the time result will be inaccurate
 lastbgproc="$!"
-trap '[ "$lastbgproc" = "$!" ]||kill -kill "$!" 1>&6 2>&6' sigterm
+trap '[ "$lastbgproc" = "$!" ]||${logincommand[@]} kill -kill "$!" 1>&6 2>&6' sigterm
+#the external kill may be used here, if logincommand is sudo
 { time {
-"${launcher[@]}" "${testcommand[@]}" 1>&8 2>&9 3>&- 10>&- 0<&5-&
+"${launcher[@]}" "${logincommand[@]}" "${testcommand[@]}" 1>&8 2>&9 3>&- 10>&- 0<&5-&
 wait $! 1>&6
 #recover the status if killed, must print result before time
 wait $! 1>&6;};} 1>&6 2>&10
@@ -739,10 +753,10 @@ else echo "Generating input file $4=\`$1', from \`${2%"$'\015'"}', using method 
     *)trap "" sigusr2; exec 4>&-; (($4>=cachedto))&&clearread gi2; getresult 4 0 "\`$3'";;
   esac 1>&6 2>&6
 fi 8>&- 9>&- 5<&-
-trap "trap '' sigusr2; skipinput=1; kill $! 1>&6 2>&6; wait $!; wait $started" sigusr2
+trap "trap '' sigusr2; skipinput=1; kill -kill $! 1>&6 2>&6; wait $!; wait $started" sigusr2
 #when received usr2, the control may be in stopall, do not use return here
 if [ "$skipinput" = "1" ]
-  then wait $started; kill $! 1>&6 2>&6; wait $!; return 1
+  then wait $started; kill -kill $! 1>&6 2>&6; wait $!; return 1
 elif while kill -0 $! 1>&6 2>&6; do wait $!; done; then trap 'skipinput=1' sigusr2
   #sigalrm may break this wait
 elif inputerrorcode=$?
@@ -772,8 +786,9 @@ timetype=3
 #0:real 1:user 2:sys 3:user+sys
 memorylimit=off
 outputlimit=off
-cpumask=""
+cpumask=
 #empty for all
+processlimit=off
 
 judge=("diff --strip-trailing-cr -q %a %o")
 fullscore=10
@@ -851,11 +866,26 @@ compiler="*off"
 compileonly=0
 sourcefile=
 
+logincommand=()
+protecteduser=0
+killcommand=(kill -alrm $$)
+
 . "$LOWSARS_LIBDIR/escape.sh"
+
+getarg(){
+[ "${arg:=${!OPTIND}=}" = "" ]&&getresult 2
+((OPTIND++))
+}
+
+if [ "$LOWSARS_PARAMS" = "" ]
+  then LOWSARS_PARAMS=()
+  else unescape "$LOWSARS_PARAMS"
+    LOWSARS_PARAMS=("${escaperesult[@]}")
+fi
 
 {
 #█钾◣[read arguments]
-while if ! getopts :a:AbBc:C:defF:g:hHiI:j:J:k:Kl:L:m:MnN:o:O:pP:qrRsSt:Tu:vVw:W:xX:z-: param
+while if ! getopts :a:AbBc:C:defF:g:hHiI:j:J:k:Kl:L:m:MnN:o:O:pP:qrRsSt:Tu:vVw:W:xX:z-: param "${LOWSARS_PARAMS[@]}" "$@"
   then param=; arg="${!OPTIND}"; ((OPTIND++<=$#))
   elif [ "$param" = "-" ]; then
     param="--${OPTARG%%=*}"
@@ -864,71 +894,72 @@ while if ! getopts :a:AbBc:C:defF:g:hHiI:j:J:k:Kl:L:m:MnN:o:O:pP:qrRsSt:Tu:vVw:W
   #if arg is not empty, add a trailing = and must be stripped below, for limitations of bash
   #this is not a dirty thing (guaranteed correct, not crackable, do not harm following things)
   #just ask why bash couldn't do like that, and you'll find a way
+echo "$param $arg" >&2
   case "$param" in
     --help)getresult -1;;
     --version)getresult -2;;
     --info)getresult -3;;
     -b)returnonerror=1;;
-    -t|--time-limit)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    -t|--time-limit)getarg
       timelimit="${arg%=*}";;
-    -w|--timewait)[ "${arg:=${!OPTIND}${!OPTIND=$((OPTIND++))}}" = "" ]&&getresult 2
+    -w|--timewait)getarg
       maxruntime="${arg%=*}";;
-    -k|--kill-time)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    -k|--kill-time)getarg
       killtime="${arg%=*}";;
-    --alarm-time)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    --alarm-time)getarg
       alarmtime="${arg%=*}";;
     --user-time)timetype=1;;
     --real-time)timetype=0;;
-    --cpu)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    --cpu)getarg
       cpumask="${arg%=*}";[ "${cpumask%%[- ]*}" = "$cpumask" ]||getresult 9;;
       #bad check, only removing harmful - and space
     -K|--no-timelimit)timelimit="off";killtime="off";maxruntime="off";;
-    -o|--output-limit)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    -o|--output-limit)getarg
       outputlimit="${arg%=*}";;
-    -m|--memory-limit)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    -m|--memory-limit)getarg
       memorylimit="${arg%=*}";;
     -c|--compile-limit);;
-    -C|--compiler)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    -C|--compiler)getarg
       compiler="${arg%=*}";;
     --check-compile)compileonly=1;;
-    --source-file)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    --source-file)getarg
       sourcefile="${arg%=*}";;
     -a|--case);;
     -p|--plain-check)plaincheck=1;;
-    -j|--judge)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    -j|--judge)getarg
       judge="${arg%=*}"
       lastjudge=0;;
-    -J|--additional-judge)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    -J|--additional-judge)getarg
       judge[lastjudge=${#judgelist[@]}]="${arg%=*}"
       judgescore[lastjudge]=
       judgeresult[lastjudge]=;;
-    --judge-score)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    --judge-score)getarg
       judgescore[lastjudge]="${arg%=*}";;
-    --result)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    --result)getarg
       judgeresult[lastjudge]="${arg%=*}";;
     -d|--generate-data)judge="cp %o %a";;
     -f|--forced-judge)forcejudge=1;;
     --cat)judgeinput=1;nooutputdata=1;;
     -n|--no-answer)nooutputdata=1;;
-    --checker)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    --checker)getarg
       judgelist="${arg%=*}"; nooutputdata=1; forcedjudge=1;;
     -s|--scored-judge)judgemode[lastjudge]=1;;
     -T|--judge-text)usejudgetext[lastjudge]=1;;
-    --score)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    --score)getarg
       fullscore="${arg%=*}";;
-    -I|--input)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    -I|--input)getarg
       lastinputfile="${arg%=*}";;
     -R|--read-file)inputfile[count]="$lastinputfile"
       inputdata[count]="/dev/stdin"; inputtype[count++]="*cp";;
-    -N|--file-content)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    -N|--file-content)getarg
       inputdata[count]="${arg%=*}"; inputtype[count]="*echo"
       inputfile[count++]="$lastinputfile"; lastinputfile=;;
-    -O|--output)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    -O|--output)getarg
       outputfile="${arg%=*}";;
     -v|--verbose)verbose=/dev/stderr;;
-    -l|--log-stdout)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    -l|--log-stdout)getarg
       stdoutfile="${arg%=*}";;
-    -L|--log-stderr)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    -L|--log-stderr)getarg
       stderrfile="${arg%=*}";;
     -h|--show-stdout)doublestdout=1;;
     -H|--show-stderr)doublestderr=1;;
@@ -942,12 +973,22 @@ while if ! getopts :a:AbBc:C:defF:g:hHiI:j:J:k:Kl:L:m:MnN:o:O:pP:qrRsSt:Tu:vVw:W
     --uniform-result)returnonerror=1;;
     --no-input-check)inputcheck=0;;
     --network-submit)alternativedetail=1;;
-    -P|--parameters)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    -P|--parameters)getarg
       testcommand=("${testcommand[@]}" "${arg%=*}");;
-    --command)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    --command)getarg
       testcommand="${arg%=*}";;
-    -W|--workdir)[ "${arg:=${!OPTIND}${!OPTIND+=$((OPTIND++))}}" = "" ]&&getresult 2
+    -W|--workdir)getarg
       workdir="${arg%=*}";;
+    -u|--user)getarg
+      logincommand=(sudo -u "${arg%=*}")
+      if [ "${arg%=*}" = "root" ]
+        then protecteduser=0
+        else protecteduser=1
+      fi;;
+    --process)getarg
+      processlimit="${arg%=*}";;
+    -5|--killall-user)
+      killcommand=(5);;
     -\?)param=-$OPTARG; getresult 1;;
     -:)param=-$OPTARG; getresult 2;;
     --*)getresult 1;;
@@ -960,6 +1001,10 @@ while if ! getopts :a:AbBc:C:defF:g:hHiI:j:J:k:Kl:L:m:MnN:o:O:pP:qrRsSt:Tu:vVw:W
   esac
 done
 [ "$inputlistbegin" = "0" ]&&getresult 3
+[ "$killcommand" = "5" ]&&{
+  [ "$isprotected" = "0" ]&&getresult 33
+  killcommand=("${logincommand[@]}" killall5 `kill -l kill`)
+}
 
 #█钒◣[prepare parameters]
                              ESCAPE_VALUES[110]="$problem" #%n
@@ -1089,6 +1134,7 @@ case "$compiler" in
 esac
 
 [ "$compiler" = "" ]||{
+  [ -e "$sourcefile" ]||getresult -142
                              ESCAPE_VALUES[115]="$sourcefile" #%s
   unescape "$compiler"
   compiler="$escaperesult"
@@ -1138,16 +1184,17 @@ trap 'kill -usr2 $$; trap sigint; getresult 193' sigint sigterm
 #█镓◣[prepare data files], and call runtest to run!
 #a dirty thing need a dozen more dirty things to fix
 if : ${outputindex:="-1"}
-for ((i=0,j=0;j+=i==outputindex,i+j<count;i++))
+! for ((i=0,j=0;j+=i==outputindex,i+j<count;i++))
   do generateinput "${inputfile[i+j]}" "${inputdata[i+j]}" "${inputtype[i+j]}" "$i"||{ trap sigchld; i="$count";! :;}
-done&&{ [ "$outputindex" = "-1" ]||generateinput "${inputfile[outputindex]}" "${inputdata[outputindex]}" "${inputtype[outputindex]}" "$((count-1))"||{ trap sigchld; ! :;};}
+done||! { [ "$outputindex" = "-1" ]||generateinput "${inputfile[outputindex]}" "${inputdata[outputindex]}" "${inputtype[outputindex]}" "$((count-1))"||{ trap sigchld; ! :;};}
 #break will make for return 0, so use another way
 #if errors occured and input check enabled, generateinput will call getresult and exit
 #there should be a clean before exit
 #dirty fix end, but it's now very short
 
-then echo -n "All input files generated" 1>&6
-else echo -n "Program exited before input generation finish" 1>&6
+then echo -n "Program exited before input generation finish" 1>&6
+elif [ "$count" != "0" ]
+  then echo -n "All input files generated" 1>&6
 fi
 exec 4>&-
 
