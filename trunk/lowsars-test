@@ -740,13 +740,13 @@ generateinput(){
 [ "$skipinput" = "1" ]&&return 1
 lastbgproc="$!"
 if [ "$1" = "/dev/stdin" ]; then
-  echo "Input file $4 is redirected to stdin, from \`${2%"$'\015'"}', using method \`$3'..." 1>&6
+  echo "Input file $4 is redirected to stdin, from \`${2%$'\015'}', using method \`$3'..." 1>&6
   case "$3" in
     \*cp)cat <"$2" 3>&- 10>&- 1>&4 0<&0 &;;
     \*echo)cat <<<"$2" 3>&- 10>&- 1>&4 &;;
     *)trap "" sigusr2; exec 4>&-; (($4>=cachedto))&&clearread gi1; getresult 4 0 "\`$3'";;
   esac
-else echo "Generating input file $4=\`$1', from \`${2%"$'\015'"}', using method \`$3'..." 1>&6
+else echo "Generating input file $4=\`$1', from \`${2%$'\015'}', using method \`$3'..." 1>&6
   case "$3" in
     \*cp)cp -- "$2" "$1" 1>&- 10>&- 3>&- 0<&0 &;;
     \*echo)cat <<<"$2" 10>&- 3>&- 1>"$1" &;;
@@ -873,8 +873,9 @@ killcommand=(kill -alrm $$)
 . "$LOWSARS_LIBDIR/escape.sh"
 
 getarg(){
-[ "${arg:=${!OPTIND}=}" = "" ]&&getresult 2
-((OPTIND++))
+#getarg ${@:OPTIND:1}
+#this makes $1 empty if there is no such many parameters
+[ "${arg:=$1${1+=$((OPTIND++))}}" = "" ]&&getresult 2
 }
 
 if [ "$LOWSARS_PARAMS" = "" ]
@@ -883,9 +884,11 @@ if [ "$LOWSARS_PARAMS" = "" ]
     LOWSARS_PARAMS=("${escaperesult[@]}")
 fi
 
+set -- "${LOWSARS_PARAMS[@]}" "$@"
+
 {
 #█钾◣[read arguments]
-while if ! getopts :a:AbBc:C:defF:g:hHiI:j:J:k:Kl:L:m:MnN:o:O:pP:qrRsSt:Tu:vVw:W:xX:z-: param "${LOWSARS_PARAMS[@]}" "$@"
+while if ! getopts :a:AbBc:C:defF:g:hHiI:j:J:k:Kl:L:m:MnN:o:O:pP:qrRsSt:Tu:vVw:W:xX:z-: param "$@"
   then param=; arg="${!OPTIND}"; ((OPTIND++<=$#))
   elif [ "$param" = "-" ]; then
     param="--${OPTARG%%=*}"
@@ -894,72 +897,71 @@ while if ! getopts :a:AbBc:C:defF:g:hHiI:j:J:k:Kl:L:m:MnN:o:O:pP:qrRsSt:Tu:vVw:W
   #if arg is not empty, add a trailing = and must be stripped below, for limitations of bash
   #this is not a dirty thing (guaranteed correct, not crackable, do not harm following things)
   #just ask why bash couldn't do like that, and you'll find a way
-echo "$param $arg" >&2
   case "$param" in
     --help)getresult -1;;
     --version)getresult -2;;
     --info)getresult -3;;
     -b)returnonerror=1;;
-    -t|--time-limit)getarg
+    -t|--time-limit)getarg ${@:OPTIND:1}
       timelimit="${arg%=*}";;
-    -w|--timewait)getarg
+    -w|--timewait)getarg ${@:OPTIND:1}
       maxruntime="${arg%=*}";;
-    -k|--kill-time)getarg
+    -k|--kill-time)getarg ${@:OPTIND:1}
       killtime="${arg%=*}";;
-    --alarm-time)getarg
+    --alarm-time)getarg ${@:OPTIND:1}
       alarmtime="${arg%=*}";;
     --user-time)timetype=1;;
     --real-time)timetype=0;;
-    --cpu)getarg
+    --cpu)getarg ${@:OPTIND:1}
       cpumask="${arg%=*}";[ "${cpumask%%[- ]*}" = "$cpumask" ]||getresult 9;;
       #bad check, only removing harmful - and space
     -K|--no-timelimit)timelimit="off";killtime="off";maxruntime="off";;
-    -o|--output-limit)getarg
+    -o|--output-limit)getarg ${@:OPTIND:1}
       outputlimit="${arg%=*}";;
-    -m|--memory-limit)getarg
+    -m|--memory-limit)getarg ${@:OPTIND:1}
       memorylimit="${arg%=*}";;
     -c|--compile-limit);;
-    -C|--compiler)getarg
+    -C|--compiler)getarg ${@:OPTIND:1}
       compiler="${arg%=*}";;
     --check-compile)compileonly=1;;
-    --source-file)getarg
+    --source-file)getarg ${@:OPTIND:1}
       sourcefile="${arg%=*}";;
     -a|--case);;
     -p|--plain-check)plaincheck=1;;
-    -j|--judge)getarg
+    -j|--judge)getarg ${@:OPTIND:1}
       judge="${arg%=*}"
       lastjudge=0;;
-    -J|--additional-judge)getarg
+    -J|--additional-judge)getarg ${@:OPTIND:1}
       judge[lastjudge=${#judgelist[@]}]="${arg%=*}"
       judgescore[lastjudge]=
       judgeresult[lastjudge]=;;
-    --judge-score)getarg
+    --judge-score)getarg ${@:OPTIND:1}
       judgescore[lastjudge]="${arg%=*}";;
-    --result)getarg
+    --result)getarg ${@:OPTIND:1}
       judgeresult[lastjudge]="${arg%=*}";;
     -d|--generate-data)judge="cp %o %a";;
     -f|--forced-judge)forcejudge=1;;
     --cat)judgeinput=1;nooutputdata=1;;
     -n|--no-answer)nooutputdata=1;;
-    --checker)getarg
+    --checker)getarg ${@:OPTIND:1}
       judgelist="${arg%=*}"; nooutputdata=1; forcedjudge=1;;
     -s|--scored-judge)judgemode[lastjudge]=1;;
     -T|--judge-text)usejudgetext[lastjudge]=1;;
-    --score)getarg
+    --score)getarg ${@:OPTIND:1}
       fullscore="${arg%=*}";;
-    -I|--input)getarg
+    -I|--input)getarg ${@:OPTIND:1}
       lastinputfile="${arg%=*}";;
     -R|--read-file)inputfile[count]="$lastinputfile"
       inputdata[count]="/dev/stdin"; inputtype[count++]="*cp";;
-    -N|--file-content)getarg
+    -N|--file-content)getarg ${@:OPTIND:1}
       inputdata[count]="${arg%=*}"; inputtype[count]="*echo"
       inputfile[count++]="$lastinputfile"; lastinputfile=;;
-    -O|--output)getarg
+    -O|--output)getarg ${@:OPTIND:1}
       outputfile="${arg%=*}";;
     -v|--verbose)verbose=/dev/stderr;;
-    -l|--log-stdout)getarg
+    -l|--log-stdout)getarg ${@:OPTIND:1}
       stdoutfile="${arg%=*}";;
-    -L|--log-stderr)getarg
+    -L|--log-stderr)getarg ${@:OPTIND:1}
       stderrfile="${arg%=*}";;
     -h|--show-stdout)doublestdout=1;;
     -H|--show-stderr)doublestderr=1;;
@@ -973,19 +975,19 @@ echo "$param $arg" >&2
     --uniform-result)returnonerror=1;;
     --no-input-check)inputcheck=0;;
     --network-submit)alternativedetail=1;;
-    -P|--parameters)getarg
+    -P|--parameters)getarg ${@:OPTIND:1}
       testcommand=("${testcommand[@]}" "${arg%=*}");;
-    --command)getarg
+    --command)getarg ${@:OPTIND:1}
       testcommand="${arg%=*}";;
-    -W|--workdir)getarg
+    -W|--workdir)getarg ${@:OPTIND:1}
       workdir="${arg%=*}";;
-    -u|--user)getarg
+    -u|--user)getarg ${@:OPTIND:1}
       logincommand=(sudo -u "${arg%=*}")
       if [ "${arg%=*}" = "root" ]
         then protecteduser=0
         else protecteduser=1
       fi;;
-    --process)getarg
+    --process)getarg ${@:OPTIND:1}
       processlimit="${arg%=*}";;
     -5|--killall-user)
       killcommand=(5);;
@@ -1164,7 +1166,7 @@ popd 1>/dev/null 2>&6
 echo -n "Testing $problem with " 1>&6
 if [ "$count" = "0" ]
   then echo -n "no input file"
-  else echo -n "input file \`${inputdata%"$'\015'"}' as \`$inputfile'"
+  else echo -n "input file \`${inputdata%$'\015'}' as \`$inputfile'"
     [ "$count" = "1" ]||echo -n " (and $((count-1)) more)"
   #\015 is the carriage return which apears in texts created in windows
   #this avoids the problem of verbose output of -N input
