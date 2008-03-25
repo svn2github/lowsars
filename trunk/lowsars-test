@@ -214,6 +214,7 @@ echo "${bigcache[*]}"
 *     --password-file=file       read user password from the file, for -u -U
 *     --pipe                     the next file should be created as a pipe,
                                    usually used with --background-input
+      --priority=number          increse nice with the number
       --process=number           the process limit, should be used together
                                    with -u, or it will be something unwanted
 * -Q, --quick-test               set --show-stdout --show-stderr --show-output
@@ -372,7 +373,7 @@ case "$1" in
       then judgedetail=" (terminated with exitcode "$exitcode")"
     elif ((exitcode>127&&exitcode<193))
       then judgedetail=" (terminated by SIG`kill -l "$exitcode" 2>&6`)"
-      else judgedetail=" (terminated with unknown reason)"
+      else judgedetail=" (terminated with unknown reason)" //FIXME: should see execmessage for details
     fi
     judgedetail="Program reached the time limit ${timelimit}s, stopped at ${judgetime}s$judgedetail";;
   -190)msg="Memory Limit Exceeded";;
@@ -789,6 +790,7 @@ outputlimit=off
 cpumask=
 #empty for all
 processlimit=off
+priority=0
 
 judge=("diff --strip-trailing-cr -q %a %o")
 fullscore=10
@@ -991,6 +993,8 @@ while if ! getopts :a:AbBc:C:defF:g:hHiI:j:J:k:Kl:L:m:MnN:o:O:pP:qrRsSt:Tu:vVw:W
       processlimit="${arg%=*}";;
     -5|--killall-user)
       killcommand=(5);;
+    --priority)getarg ${@:OPTIND:1}
+      priority="${arg%=*}";;
     -\?)param=-$OPTARG; getresult 1;;
     -:)param=-$OPTARG; getresult 2;;
     --*)getresult 1;;
@@ -1098,6 +1102,7 @@ done
 [ "$alarmtime" = "off" ]||{ [ "`bc`" = 1 ];} 2>/dev/null <<<"$alarmtime>$maxruntime"&&alarmtime="$maxruntime";}
 
 [ "$cpumask" = "" ]||launcher=(taskset "$cpumask" "${launcher[@]}")
+[ "$priority" = "0" ]||launcher=(nice -n "$priority" ${launcher[@]}")
 
 :
 } 3>&1 7>&2||geterror 255||{ trap exit;exit 2;}
