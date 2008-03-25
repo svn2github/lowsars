@@ -1102,7 +1102,7 @@ done
 [ "$alarmtime" = "off" ]||{ [ "`bc`" = 1 ];} 2>/dev/null <<<"$alarmtime>$maxruntime"&&alarmtime="$maxruntime";}
 
 [ "$cpumask" = "" ]||launcher=(taskset "$cpumask" "${launcher[@]}")
-[ "$priority" = "0" ]||launcher=(nice -n "$priority" ${launcher[@]}")
+[ "$priority" = "0" ]||launcher=(nice -n "$priority" "${launcher[@]}")
 
 :
 } 3>&1 7>&2||geterror 255||{ trap exit;exit 2;}
