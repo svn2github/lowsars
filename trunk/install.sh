@@ -18,8 +18,11 @@ echo "Copying the lowsars-* files..."
 d_bin=/usr/bin
 mkdir -p $d_bin
 binfiles=`ls lowsars*`
-for bf in $binfiles; do
+for bf in ${binfiles//~/}; do
    cp $bf $d_bin/$bf
 done
+echo "Copying /bin/bash to /bin/bash_by_lowsars"
+echo "If anything goes wrong, try copy a bash from Ubuntu to /bin/bash_by_lowsars"
+# cp /bin/bash /bin/bash_by_lowsars
 echo "All done."
 

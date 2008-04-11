@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash_by_lowsars
 # LowSars (pre-azalea) - Lightweight OI Wonderful Scoring And Ranking System
 # Usage: ./lowsars [OPTIONS] CONFIGFILE (See below)
 # credit: chinatslsz@hotmail.com
@@ -74,6 +74,23 @@ if [ -f "$1" ]; then
    rm -R "$1"
 fi >&3 2>&3
 }
+gettotalfromuniform(){
+   gtfu_=
+   if [ -f "$1" ]; then {
+        while true; do
+           read gtfu_ gtfu_2
+           read gtfu_3 gtfu_4
+           if [ \( "$gtfu_" = Total \) -o \( -z "$gtfu_" \) ]; then break; fi
+        done
+      }< "$1" >&2
+      if [ "$gtfu_" = Total ]; then
+         echo $gtfu_2
+      else
+         echo 0
+      fi
+   else echo 0
+   fi
+}
 maxcsgp=100
 maxprob=100
 isctls=0
@@ -133,7 +150,7 @@ while if ! getopts :qcpndDvCrP-: param
       elif [ "$cfgfn" = "" ] ; then
         cfgfn="$arg"
       else 
-        gettext "something not used: " 1>&2
+        gettext "Parameter not used: " 1>&2
         echo "$arg" 1>&2
       fi;;
   esac
@@ -310,7 +327,7 @@ if [ "$onlyp" = 1 ]; then
 fi
 {
 mkdir result && echo "result dir. created"
-rm -R "$olduniform"
+#rm -R "$olduniform"
 #mv "$uniform" "$olduniform"
 mymkdir "$uniform"
 date > "$notdone"
@@ -363,21 +380,33 @@ for ct in $ctls; do
    for probid in $probls; do
       prob=${probname[probid]}
       echo "Entering Probid $probid $prob..." >&3
-      mymkfile $uniform/$ct/$prob
+      [ "$isremove" = 1 ] && mymkfile $uniform/$ct/$prob
       pt[$ctid*$maxprob+$probid]=0
       exefn="src/$ct/$prob"
+      totest=1
+      [ $totest = 0 ]&& {
+         echo gettotalfromuniform "$uniform/$ct/$prob" >&3
+         pt[ctid*maxprob+probid]=`gettotalfromuniform "$uniform/$ct/$prob"`
+      }
+      [ $totest = 1 ]&&{
       if [ $tocompile = 1 ]; then
-        rm $exefn >&3 2>&3
-        echo "Compile..." >&3
-        lowsars-test $exefn -C* -t0 --real-time >&3 2>&3 #use lowsars-test to compile
-        rm $exefn.o
+         rm $exefn >&3 2>&3
+         echo -n "`gettext "Compiling "`$ct.$prob ..." #use lowsars-test to compile
+         lowsars-test $exefn -C* -t0 --real-time 2>&3 | read x1 x2 x3
+         if [ -f "$exefn" ]; then
+             x3=`gettext "Success"`
+         else
+             x3=`gettext "Failed"`
+         fi
+         echo "$x3"
+         rm $exefn.o >&3 2>&3
       else
-        echo "No compile." >&3
+         echo "`gettext "Not to compile."`"
       fi
       mv $exefn testing/ >&3 2>&3
-      for ((csgpid=1;csgpid<=csgroups[probid];csgpid++)) do
+      for ((csgpid=1;csgpid<=csgroups[probid];csgpid++)); do
          echo "Entering Gpid $csgpid..." >&3
-         for ((csid=csbegin[probid*mazcsgp+csgpid];csid<=csend[probid*mazcsgp+csgpid];csid++)) do
+         for ((csid=csbegin[probid*mazcsgp+csgpid]; csid<=csend[probid*mazcsgp+csgpid]; csid++)); do
             echo -n "`gettext "Testing "`$ct.$prob.$csid ..."
             { #>&3
             echo "Entering Csid $csid..."
@@ -405,8 +434,9 @@ for ct in $ctls; do
             echo "Infile list for testing:  $inf4test"
 	    echo "\$exefn" $exefn
 	    baseexefn=`basename "$exefn"`
-            echo "Calling lowsars-test ./$baseexefn $inf4test -O $outf4prog $outf4data -t$timelimit -m$memlimit --score=$score --real-time"
-            resstr=`lowsars-test ./$baseexefn $inf4test -O $outf4prog $outf4data -t$timelimit -m$memlimit --score=$score --real-time`
+	    calling="lowsars-test ./$baseexefn $inf4test -O $outf4prog $outf4data -t$timelimit -m$memlimit --score=$score --real-time"
+            echo "Calling $calling"
+            resstr="`$calling`"
             cd ..
             if [ "$resstr" = "" ]; then
                resstr="0 0 Unknown Tester Error $?
@@ -429,14 +459,16 @@ for ct in $ctls; do
             pt[ctid*maxprob+probid]=$((pt[ctid*maxprob+probid]+resscore))
             echo "Now score ${pt[ctid*maxprob+probid]}" >&3
          done
+         rm testing/* >&3 2>&3
       done
-      tt[ctid]=$((tt[ctid]+pt[ctid*maxprob+probid]))
       echo "Total ${pt[ctid*maxprob+probid]}" >> "$uniform/$ct/$prob"
       str_="`gettext "Total score for %1 : %2"`"
       str_=${str_//"%1"/"$ct.$prob"}
       str_=${str_//"%2"/"${pt[$ctid*$maxprob+$probid]}"}
       echo "$str_" | tee -a $friendly
       #echo -n " ${pt[ctid*maxprob+probid]}" >> $summary
+      }
+      tt[ctid]=$((tt[ctid]+pt[ctid*maxprob+probid]))
    done
    #echo "$ct total ${tt[ctid]}" >> $uniform
    str_="`gettext "Total score for %1 : %2"`"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash_by_lowsars
 # lowsars-test: Lowsars single point tester. Completely rewritten replacement for lowsars-1p by Yu Hang (cosechy@gmail.com)
 # Copyright © 2007 Yu Hang, released under GNU General Public License Version 2 or later
 # Is it "Light-weighted" anymore?
