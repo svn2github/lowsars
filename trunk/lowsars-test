@@ -1,4 +1,4 @@
-#!/bin/bash_by_lowsars
+#!/bin/bash
 # lowsars-test: Lowsars single point tester. Completely rewritten replacement for lowsars-1p by Yu Hang (cosechy@gmail.com)
 # Copyright © 2007 Yu Hang, released under GNU General Public License Version 2 or later
 # Is it "Light-weighted" anymore?
@@ -1279,46 +1279,39 @@ elif echo "Program exited with no error, calling judge..." 1>&6
     do judgemap[${judgescore[i]:=$(((i==0)*fullscore))}]="$i"; done
   judgemap=("${judgemap[@]}" 0)
   #keep the main judge at the first place
-  i="${#judgemap[@]}"
-  maxscore=
-  maxj=
-  maxresult=
+  ((i=${#judgemap[@]}-1))
   j=
   while
-    if ((judgeexitcode=$?))
-      then echo "Judge returned with exitcode $judgeexitcode: ${result:-"(nothing)"}" 1>&6
-    elif [ "$j" != "" ]; then echo "Judge returned: ${result:-"(nothing)"}" 1>&6
-      #if false then any is always true
-      case "${judgemode[j]}" in
-        1)read -r -d "" score result<<<"$result";;
-        *)score="${judgescore[j]:=$((10*(j==0)))}";;
-      esac
-      ((${maxscore:=score}<=score))&&{
-        maxscore="$score"
-        maxj="$j"
-        maxresult="$result"
-      }
-      ((score<${judgescore[j]}))
-    fi&&((--i>=0))
-  do
     j="${judgemap[i]}"
     unescape "${judge[j]}"
     declare -p escaperesult 1>/dev/null 2>/dev/null||getresult 245
     echo "Calling judge command \`${escaperesult[*]}'..." 1>&6
     { result="`"${escaperesult[@]}"`";} 2>&6
-  done||[ "$maxj" != "" ]
+    if ((judgeexitcode=$?))
+      then echo "Judge returned with exitcode $judgeexitcode: ${result:-"(nothing)"}" 1>&6
+    else echo "Judge returned: ${result:-"(nothing)"}" 1>&6
+      case "${judgemode[j]}" in
+        1)read -r -d "" score result<<<"$result"; [ "${score:-0}" = "0" ];;
+        *)score="${judgescore[j]:=$((10*(j==0)))}"; ! :;;
+      esac
+    fi&&((--i>=0))
+  do :; done
+  ((i>=0))
 then
   #passed any judge
-  case "$maxscore" in
-    ${judgescore[maxj]})judgecode="${judgeresult[maxj]:-$((maxscore?-207:-206))}";; #ac
+  [ "$score" = "${judgescore[j]}" ]&&
+    if [ "${judgeresult[j]}" != "" ]; then judgecode="${judgeresult[j]}" #ac
+    elif [ "$score" = 0 ]; then judgecode=-206 #passed, no score, namely pe
+    else ! :
+  fi||case "$score" in
     $fullscore)judgecode="-239";; #alternative ac
     0)judgecode="-159";; #wa
     -*)judgecode="-158";; #the very sorry case
     *)if (($fullscore<0)); then judgecode="-237" #easter's case
-      elif (($maxscore>$fullscore)); then judgecode="-238" #ep and pp left
+      elif (($score>$fullscore)); then judgecode="-238" #ep and pp left
       else judgecode="-207"; fi;;
   esac 2>&6
-  getresult "$judgecode" "$maxscore" "$result" "${usejudgetext[maxj]}"
+  getresult "$judgecode" "$score" "$result" "${usejudgetext[j]}"
   #this will not cause errorous result even if fullscore=0
   #for a non-scored judge, going here means full score
 else
