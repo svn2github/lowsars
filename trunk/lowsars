@@ -57,6 +57,7 @@ X-D, --add                          Do not overide the existing result
  -P, --get-problems                 No judging, only to get a problems list
  -q, --quiet                        Be quiet
  -v, --verbose                      Output some extra information
+ -V, --test-verbose                 More verbose, pass -v to lowsars-test
  --help                             Get this help
  --version                          Show version
  
@@ -113,7 +114,7 @@ ctls=
 probls=
 cfgfn=
 #读取命令行参数
-while if ! getopts :qcpndDvCrP-: param
+while if ! getopts :qcpndDvVCrP-: param
   then param=""; arg=${!OPTIND}; ((OPTIND++<=$#))
   elif [ "$param" = "-" ]; then
     param="--${OPTARG%%=*}"
@@ -134,6 +135,7 @@ while if ! getopts :qcpndDvCrP-: param
     -n|--no-compile) tocompile=0;;
     -d|--generate-data) isdata=1;;
     -v|--verbose) verbose=/dev/stderr;;
+    -V|--test-verbose) verbose=/dev/stderr;vverbose=1;;
     -r|--remove) isremove=1;;
     -C|--get-contestants) onlyc=1 header=/dev/null;;
     -P|--get-problems) onlyp=1 header=/dev/null;;
@@ -210,6 +212,36 @@ while [ $comm != end ] ; do
             para=../data/$para
             outfcsg[$prob*$mazcsgp+$csgroup]=$para
             echo "output file for csgp $csgroup of prob $prob ${probname[prob]} : ${outfcsg[$prob*$mazcsgp+$csgroup]}" >&3
+          fi;;
+      judge)
+          para=${para//@/${probname[prob]}}
+          if [ $csgroup = 0 ]; then
+            read spjtype spjexe <<< "$para"
+            if [ "$spjtype" = ignore ];then
+               ignore=
+               while [ -n "$spjexe" ]; do
+                  read ig1 spjexe <<< "$spjexe"
+                  case "$ig1" in
+                     space)ignore="$ignore -b";;
+                     emptyline)ignore="$ignore -B";;
+                     nothing)ignore="";;
+                     allwhite)ignore="$ignore -w";;
+                     case)ignore="$ignore -i";;
+                  esac
+               done
+               spj[prob]="-j '""diff %a %o -q $ignore""'"
+            else
+               read spjexe1 spjexe2 <<< "$spjexe"
+               echo "spjexe1 $spjexe1 spjexe2 $spjexe2" >&3
+               [ -f "data/$spjexe1" ]&& spjexe="../data/$spjexe"
+               spjexe="j \"$spjexe\""
+               [ "$spjtype" = score ]&& spjexe="s$spjexe"
+               spj[prob]="-$spjexe"
+            fi
+            echo "judge for prob $prob ${probname[prob]} : ${spj[prob]}" >&3
+          else
+            echo "unable to set judge inside of a case!!" >&2
+            exit 1
           fi;;
       cases)
           a=$((csgroup++))
@@ -435,8 +467,11 @@ for ct in $ctls; do
 	    echo "\$exefn" $exefn
 	    baseexefn=`basename "$exefn"`
 	    calling="lowsars-test ./$baseexefn $inf4test -O $outf4prog $outf4data -t$timelimit -m$memlimit --score=$score --real-time"
+	    [ "$vverbose" = 1 ]&& calling="$calling -v"
+	    [ -n "$spj[probid]" ]&& calling="$calling ${spj[probid]}"
+	    pwd
             echo "Calling $calling"
-            resstr="`$calling`"
+            resstr="`$calling 2>&3`"
             cd ..
             if [ "$resstr" = "" ]; then
                resstr="0 0 Unknown Tester Error $?
