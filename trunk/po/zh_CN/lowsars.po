@@ -1,108 +1,77 @@
-# Chinese/Simplified translation of LowSars
+# translation of lowsars.po to Simplified Chinese
+# encoding: UTF-8
 # Copyright (C) 2007 Lsz
 # This file is distributed under the same license as the LowSars package.
-# lsz <chinatslsz@hotmail.com>, 2007.
-# , fuzzy
 #
-#
+# Liu Sizhuang <chinatslsz@hotmail.com>, 2007-2008.
 msgid ""
 msgstr ""
-"Project-Id-Version: lowsars 0.2 alpha\n"
+"Project-Id-Version: lowsars\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-02-04 21:12+0800\n"
-"PO-Revision-Date: 2008-01-14 21:09+0800\n"
-"Last-Translator: Liu Sizhuang(刘思壮) <chinatslsz@hotmail.com>\n"
-"Language-Team: Chinese/Simplified <i18n-translation@lists.linux.net.cn>\n"
+"POT-Creation-Date: 2008-04-13 09:43+0800\n"
+"PO-Revision-Date: 2008-04-13 09:39+0800\n"
+"Last-Translator: Liu Sizhuang <chinatslsz@hotmail.com>\n"
+"Language-Team: Simplified Chinese <zh@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../lowsars:124 ../lowsars~:124
+#: ../lowsars:141
 msgid "No such parameter:"
 msgstr "没有这样的参数:"
 
-#: ../lowsars:136 ../lowsars~:136
-msgid "something not used: "
-msgstr "没有使用的: "
+#: ../lowsars:153
+msgid "Parameter not used: "
+msgstr "没有使用的参数: "
 
-#: ../lowsars:143 ../lowsars~:143
+#: ../lowsars:160
 msgid "File not found: "
 msgstr "文件未找到: "
 
-#: ../lowsars:144
-#, fuzzy
+#: ../lowsars:161
 msgid "No input file specified. "
 msgstr "没有指定输入文件"
 
-#: ../lowsars:151 ../lowsars~:150
+#: ../lowsars:168
 msgid "Lightweight OI Wonderful Scoring And Ranking System"
 msgstr "轻量级OI奇妙的评测系统"
 
-#: ../lowsars:243 ../lowsars~:242
+#: ../lowsars:288
 msgid "No such command in config file:"
 msgstr "配置文件中没有此命令:"
 
-#: ../lowsars:381 ../lowsars~:379
+#: ../lowsars:422
+msgid "Compiling "
+msgstr "正在编译 "
+
+#: ../lowsars:425
+msgid "Success"
+msgstr "成功"
+
+#: ../lowsars:427
+msgid "Failed"
+msgstr "失败"
+
+#: ../lowsars:432
+msgid "Not to compile."
+msgstr "不编译"
+
+#: ../lowsars:438
 msgid "Testing "
 msgstr "正在测试 "
 
-#: ../lowsars:428 ../lowsars~:426
+#: ../lowsars:487
 msgid "s"
 msgstr "秒"
 
-#: ../lowsars:428 ../lowsars~:426
+#: ../lowsars:487
 msgid "Score: "
 msgstr "得分: "
 
-#: ../lowsars:435 ../lowsars:442 ../lowsars~:433 ../lowsars~:440
+#: ../lowsars:494 ../lowsars:503
 msgid "Total score for %1 : %2"
 msgstr "%1 的总分: %2"
 
-#: ../lowsars:449 ../lowsars~:447
+#: ../lowsars:510
 msgid "Judging ended at: "
 msgstr "评测结束时间: "
-
-#~ msgid "Total score for "
-#~ msgstr "%1 的总分: "
-
-#~ msgid "Name List"
-#~ msgstr "选手列表"
-
-#~ msgid "aaa"
-#~ msgstr "xxx"
-
-#~ msgid "Time Limit Exceeded."
-#~ msgstr "超时"
-
-#~ msgid "Special Judge Error."
-#~ msgstr "Special Judge 错误。"
-
-#~ msgid "Accepted."
-#~ msgstr "答案正确"
-
-#~ msgid "Wrong Answer."
-#~ msgstr "答案错误"
-
-#~ msgid "Name "
-#~ msgstr "姓名 "
-
-#~ msgid "Skipping over"
-#~ msgstr "跳过"
-
-#~ msgid "Testing Contestant"
-#~ msgstr "测试选手"
-
-#~ msgid "compile error."
-#~ msgstr "编译错误"
-
-#~ msgid "Score for"
-#~ msgstr "分数"
-
-#~ msgid "For more ranking please see ranking-<prob> ."
-#~ msgstr "想了解更多排名，请查看ranking-<题目名称>文件"
-
-#~ msgid "Press ENTER to view the result in OpenOffice or Crtl-C to break..."
-#~ msgstr "按回车在OpenOffice中查看结果，或者按Ctrl-C停止……"
-
-#~ msgid "Total"
-#~ msgstr "总分"
