@@ -18,6 +18,7 @@ CONFIGFILE EXAMPLE:
    problem yhisashax
      input @.in dict.txt
      output @.out
+     ignore white emptyline
      cases 0 5
         input @/@#.in @/dict.txt
         output @/@#.out
@@ -36,6 +37,7 @@ CONFIGFILE EXAMPLE:
    problem lszisacow
       input @.in
       output @.out
+      judge score lszjudge %a %o
       cases 0 9
          input @/@#.in
          output @/@#.out
@@ -47,26 +49,26 @@ CONFIGFILE EXAMPLE:
  The spaces are not necessary.
  
  OPTIONS:
- -c, --contestants [CONTESTANTS]    Only judge contestants in the list
- -C, --get-contestants              No judging, only to get a contestants list
-X-d, --generate-data                Use the standard program to generate data
-X-D, --add                          Do not overide the existing result
- -n, --no-compile                   Do not compile
- -r, --remove                       Remove the result, for use with -c or -p
- -p, --problems [PROBLEMS]          Only judge problems in the list
- -P, --get-problems                 No judging, only to get a problems list
- -q, --quiet                        Be quiet
- -v, --verbose                      Output some extra information
- -V, --test-verbose                 More verbose, pass -v to lowsars-test
- --help                             Get this help
- --version                          Show version
+ -a, --add                        Do not override the existing result
+ -c, --contestants [CONTESTANTS]  Only judge contestants in the list
+ -C, --get-contestants            No judging, only to get a contestants list
+X-d, --generate-data              Use the standard program to generate data
+ -n, --no-compile                 Do not compile
+ -r, --remove                     Remove the result (often used with -c or -p)
+ -p, --problems [PROBLEMS]        Only judge problems in the list
+ -P, --get-problems               No judging, only to get a problems list
+ -q, --quiet                      Be quiet
+ -v, --verbose                    Output some extra information
+ -V, --test-verbose               More verbose, pass -v to lowsars-test
+ --help                           Get this help
+ --version                        Show version
  
 Options with an X have not been implemented yet.
  '
 }
 mymkdir(){
 if [ ! -d "$1" ]; then
-   rm -R "$1"
+   rm "$1"
    mkdir "$1"
 fi >&3 2>&3
 }
@@ -99,6 +101,7 @@ isprobls=0
 isforce=0
 isdata=0
 tocompile=1
+isadd=0
 isquiet=0
 verbose=/dev/null
 out=/dev/stdout
@@ -114,7 +117,7 @@ ctls=
 probls=
 cfgfn=
 #读取命令行参数
-while if ! getopts :qcpndDvVCrP-: param
+while if ! getopts :aqcpndDvVCrP-: param
   then param=""; arg=${!OPTIND}; ((OPTIND++<=$#))
   elif [ "$param" = "-" ]; then
     param="--${OPTARG%%=*}"
@@ -128,6 +131,7 @@ while if ! getopts :qcpndDvVCrP-: param
   case "$param" in
     --help)show_usage;exit 0;;
     --version)show_version;exit 0;;
+    -a|--add) isadd=1;;
     -q|--quiet) out=/dev/null;;
     -c|--contestants) isctls=1 isctls_=1;;
     -p|--problems) isprobls=1 isprobls_=1;;
@@ -225,7 +229,7 @@ while [ $comm != end ] ; do
                      space)ignore="$ignore -b";;
                      emptyline)ignore="$ignore -B";;
                      nothing)ignore="";;
-                     allwhite)ignore="$ignore -w";;
+                     white)ignore="$ignore -w";;
                      case)ignore="$ignore -i";;
                   esac
                done
@@ -369,9 +373,9 @@ rm -R testing
 if [ "$isremove" = 1 ]; then
    for ct in $ctls; do
       for probid in $probls; do
-         $prob=${probname[$prob]}
+         prob=${probname[$prob]}
          echo "Removing $uniform/$ct/$prob"
-         rm "$uniform/$ct/$prob"
+         rm -R "$uniform/$ct/$prob"
       done
    done
    rm $notdone
@@ -418,7 +422,11 @@ for ct in $ctls; do
       pt[$ctid*$maxprob+$probid]=0
       exefn="src/$ct/$prob"
       totest=1
+      [ "$isadd" = 1 ]&& [ -f $uniform/$ct/$prob ] && totest=0
       [ $totest = 0 ]&& {
+         a="`gettext "Not to test %1"`"
+         a=${a//%1/$ct.$prob}
+         echo "$a"
          echo gettotalfromuniform "$uniform/$ct/$prob" >&3
          pt[ctid*maxprob+probid]=`gettotalfromuniform "$uniform/$ct/$prob"`
       }
@@ -495,7 +503,7 @@ for ct in $ctls; do
 	    }
 	    pwd
             echo "Calling ${calling[@]}"
-            resstr="`${calling[@]} 2>&3`"
+            resstr="`"${calling[@]}" 2>&3`"
             cd ..
             if [ "$resstr" = "" ]; then
                resstr="0 0 Unknown Tester Error $?
