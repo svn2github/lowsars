@@ -229,14 +229,16 @@ while [ $comm != end ] ; do
                      case)ignore="$ignore -i";;
                   esac
                done
-               spj[prob]="-j '""diff %a %o -q $ignore""'"
+               spjpara[prob]="-j"
+               spj[prob]="diff %a %o -q $ignore"
             else
                read spjexe1 spjexe2 <<< "$spjexe"
                echo "spjexe1 $spjexe1 spjexe2 $spjexe2" >&3
                [ -f "data/$spjexe1" ]&& spjexe="../data/$spjexe"
-               spjexe="j \"$spjexe\""
-               [ "$spjtype" = score ]&& spjexe="s$spjexe"
-               spj[prob]="-$spjexe"
+               spj[prob]="$spjexe"
+               spjexe=
+               [ "$spjtype" = score ]&& spjexe="s"
+               spjpara[prob]="-${spjexe}j"
             fi
             echo "judge for prob $prob ${probname[prob]} : ${spj[prob]}" >&3
           else
@@ -466,12 +468,34 @@ for ct in $ctls; do
             echo "Infile list for testing:  $inf4test"
 	    echo "\$exefn" $exefn
 	    baseexefn=`basename "$exefn"`
-	    calling="lowsars-test ./$baseexefn $inf4test -O $outf4prog $outf4data -t$timelimit -m$memlimit --score=$score --real-time"
-	    [ "$vverbose" = 1 ]&& calling="$calling -v"
-	    [ -n "$spj[probid]" ]&& calling="$calling ${spj[probid]}"
+#	    calling="lowsars-test ./$baseexefn $inf4test -O $outf4prog $outf4data -t$timelimit -m$memlimit --score=$score --real-time"
+#	    [ "$vverbose" = 1 ]&& calling="$calling -v"
+#	    [ -n "$spj[probid]" ]&& calling="$calling ${spj[probid]}"
+	    calling=()
+	    calling[1]=lowsars-test
+	    calling[2]="./$baseexefn"
+	    i=3
+	    while [ -n "$inf4test" ]; do
+	       read calling[i] inf4test <<< "$inf4test"
+	       i=$((i+1))
+	    done
+	    calling[$i]="-O"
+	    i=$((i+1)); calling[$i]="$outf4prog"
+	    i=$((i+1)); calling[$i]="$outf4data"
+	    i=$((i+1)); calling[$i]="-t$timelimit"
+	    i=$((i+1)); calling[$i]="-m$memlimit"
+	    i=$((i+1)); calling[$i]="--score=$score"
+	    i=$((i+1)); calling[$i]="--real-time"
+	    [ "$vverbose" = 1 ]&&{
+	       i=$((i+1)); calling[$i]="-v"
+	    }
+	    [ -n "$spjpara[probid]" ]&&{
+	       i=$((i+1)); calling[$i]="${spjpara[probid]}"
+	       i=$((i+1)); calling[$i]="${spj[probid]}"
+	    }
 	    pwd
-            echo "Calling $calling"
-            resstr="`$calling 2>&3`"
+            echo "Calling ${calling[@]}"
+            resstr="`${calling[@]} 2>&3`"
             cd ..
             if [ "$resstr" = "" ]; then
                resstr="0 0 Unknown Tester Error $?
