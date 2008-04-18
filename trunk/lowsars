@@ -8,7 +8,7 @@ TEXTDOMAIN=lowsars
 export TEXTDOMAIN
 export TEXTDOMAINDIR
 show_version(){
- echo "LowSars 0.2.0 alpha";
+ echo "LowSars 0.2-svn-20080417";
 }
 #显示用法帮助
 show_usage(){
@@ -182,7 +182,7 @@ prob=0
 outofprob=1
 csgroup=0
 #读取试题配置文件
-while [ $comm != end ] ; do
+while [ "$comm" != end ] ; do
    read comm para
    case "$comm" in
       end)
@@ -204,8 +204,8 @@ while [ $comm != end ] ; do
             echo "input file for prob $prob ${probname[prob]} : ${inf[prob]}" >&3
           else
             para=../data/$para
-            infcsg[$prob*$mazcsgp+$csgroup]=$para
-            echo "input file for csgp $csgroup of prob $prob ${probname[prob]} : ${infcsg[$prob*$mazcsgp+$csgroup]}" >&3
+            infcsg[$prob*$maxcsgp+$csgroup]=$para
+            echo "input file for csgp $csgroup of prob $prob ${probname[prob]} : ${infcsg[$prob*$maxcsgp+$csgroup]}" >&3
           fi;;
       output)
           para=${para//@/${probname[prob]}}
@@ -214,8 +214,8 @@ while [ $comm != end ] ; do
             echo "output file for prob $prob ${probname[prob]} : ${outf[prob]}" >&3
           else
             para=../data/$para
-            outfcsg[$prob*$mazcsgp+$csgroup]=$para
-            echo "output file for csgp $csgroup of prob $prob ${probname[prob]} : ${outfcsg[$prob*$mazcsgp+$csgroup]}" >&3
+            outfcsg[$prob*$maxcsgp+$csgroup]=$para
+            echo "output file for csgp $csgroup of prob $prob ${probname[prob]} : ${outfcsg[$prob*$maxcsgp+$csgroup]}" >&3
           fi;;
       judge)
           para=${para//@/${probname[prob]}}
@@ -251,50 +251,52 @@ while [ $comm != end ] ; do
           fi;;
       cases)
           a=$((csgroup++))
-          read csbegin[$prob*$mazcsgp+$csgroup] csend[$prob*$mazcsgp+$csgroup] <<< "$para"
-          echo "case $csgroup : ${csbegin[$prob*$mazcsgp+$csgroup]} - ${csend[$prob*$mazcsgp+$csgroup]}" >&3
-          tlcsg[$prob*$mazcsgp+$csgroup]=1
-          mlcsg[$prob*$mazcsgp+$csgroup]=204800
-          sccsg[$prob*$mazcsgp+$csgroup]=10
+          read csbegin[$prob*$maxcsgp+$csgroup] csend[$prob*$maxcsgp+$csgroup] <<< "$para"
+          echo "case $csgroup : ${csbegin[$prob*$maxcsgp+$csgroup]} - ${csend[$prob*$maxcsgp+$csgroup]}" >&3
+          tlcsg[$prob*$maxcsgp+$csgroup]=1
+          mlcsg[$prob*$maxcsgp+$csgroup]=204800
+          sccsg[$prob*$maxcsgp+$csgroup]=10
           para="data/@/@#.in"
-          infcsg[$prob*$mazcsgp+$csgroup]=${para//@/${probname[prob]}}
+          infcsg[$prob*$maxcsgp+$csgroup]=${para//@/${probname[prob]}}
           para="data/@/@#.out"
-          outfcsg[$prob*$mazcsgp+$csgroup]=${para//@/${probname[prob]}} ;;
+          outfcsg[$prob*$maxcsgp+$csgroup]=${para//@/${probname[prob]}} ;;
       case)
           a=$((csgroup++))
-          read csbegin[$prob*$mazcsgp+$csgroup] csend[$prob*$mazcsgp+$csgroup] <<< "$para $para"
-          echo "case $csgroup : ${csbegin[$prob*$mazcsgp+$csgroup]} - ${csend[$prob*$mazcsgp+$csgroup]}" >&3
-          tlcsg[$prob*$mazcsgp+$csgroup]=1
-          mlcsg[$prob*$mazcsgp+$csgroup]=204800
-          sccsg[$prob*$mazcsgp+$csgroup]=10
+          [ "$para" = "nonumber" ]&& para=$csgroup
+          read csbegin[$prob*$maxcsgp+$csgroup] csend[$prob*$maxcsgp+$csgroup] <<< "$para $para"
+          echo "case $csgroup : ${csbegin[$prob*$maxcsgp+$csgroup]} - ${csend[$prob*$maxcsgp+$csgroup]}" >&3
+          tlcsg[$prob*$maxcsgp+$csgroup]=1
+          mlcsg[$prob*$maxcsgp+$csgroup]=204800
+          sccsg[$prob*$maxcsgp+$csgroup]=10
           para="data/@/@#.in"
-          infcsg[$prob*$mazcsgp+$csgroup]=${para//@/${probname[prob]}}
+          infcsg[$prob*$maxcsgp+$csgroup]=${para//@/${probname[prob]}}
           para="data/@/@#.out"
-          outfcsg[$prob*$mazcsgp+$csgroup]=${para//@/${probname[prob]}} ;;
+          outfcsg[$prob*$maxcsgp+$csgroup]=${para//@/${probname[prob]}} ;;
       timelimit)
           if [ $csgroup = 0 ]; then
             echo "unable to set timelimit outside of a case!!" >&2
             exit 1
           else
-            tlcsg[$prob*$mazcsgp+$csgroup]=$para
-            echo "timelimit for csgp $csgroup of prob $prob ${probname[prob]} : ${tlcsg[$prob*$mazcsgp+$csgroup]}" >&3
+            tlcsg[$prob*$maxcsgp+$csgroup]=$para
+            echo "timelimit for csgp $csgroup of prob $prob ${probname[prob]} : ${tlcsg[$prob*$maxcsgp+$csgroup]}" >&3
           fi;;
       score)
           if [ $csgroup = 0 ]; then
             echo "unable to set score outside of a case!!" >&2
             exit 1
           else
-            sccsg[$prob*$mazcsgp+$csgroup]=$para
-            echo "score for csgp $csgroup of prob $prob ${probname[prob]} : ${sccsg[$prob*$mazcsgp+$csgroup]}" >&3
+            sccsg[$prob*$maxcsgp+$csgroup]=$para
+            echo "score for csgp $csgroup of prob $prob ${probname[prob]} : ${sccsg[$prob*$maxcsgp+$csgroup]}" >&3
           fi;;
       memory)
           if [ $csgroup = 0 ]; then
             echo "unable to set memorylimit outside of a case!!" >&2
             exit 1
           else
-            mlcsg[$prob*$mazcsgp+$csgroup]=$para
-            echo "memorylimit for csgp $csgroup of prob $prob ${probname[prob]} : ${mlcsg[$prob*$mazcsgp+$csgroup]}" >&3
+            mlcsg[$prob*$maxcsgp+$csgroup]=$para
+            echo "memorylimit for csgp $csgroup of prob $prob ${probname[prob]} : ${mlcsg[$prob*$maxcsgp+$csgroup]}" >&3
           fi;;
+      "");;
       *) gettext "No such command in config file:" 1>&2
          echo "$comm" 1>&2
          exit 1;;
@@ -439,6 +441,7 @@ for ct in $ctls; do
              x3=`gettext "Success"`
          else
              x3=`gettext "Failed"`
+             totest=2
          fi
          echo "$x3"
          rm $exefn.o >&3 2>&3
@@ -446,9 +449,11 @@ for ct in $ctls; do
          echo "`gettext "Not to compile."`"
       fi
       mv $exefn testing/ >&3 2>&3
+      }
+      [ $totest = 1 ]&&{
       for ((csgpid=1;csgpid<=csgroups[probid];csgpid++)); do
          echo "Entering Gpid $csgpid..." >&3
-         for ((csid=csbegin[probid*mazcsgp+csgpid]; csid<=csend[probid*mazcsgp+csgpid]; csid++)); do
+         for ((csid=csbegin[probid*maxcsgp+csgpid]; csid<=csend[probid*maxcsgp+csgpid]; csid++)); do
             echo -n "`gettext "Testing "`$ct.$prob.$csid ..."
             { #>&3
             echo "Entering Csid $csid..."
@@ -459,13 +464,15 @@ for ct in $ctls; do
 	    pwd
             echo "Infile for program: $inf4prog"
             echo "Outfile for program: $outf4prog"
-            inf4data=${infcsg[$probid*$mazcsgp+$csgpid]//#/$csid}
+            echo "$probid*$maxcsgp+$csgpid=$((probid*maxcsgp+csgpid))"
+            echo ""
+            inf4data=${infcsg[$probid*$maxcsgp+$csgpid]//#/$csid}
             #inf4data=${inf4data//#/$csid}
-            outf4data=${outfcsg[$probid*$mazcsgp+$csgpid]//#/$csid}
+            outf4data=${outfcsg[$probid*$maxcsgp+$csgpid]//#/$csid}
             #outf4data=${outf4data//#/$csid}
-            timelimit=${tlcsg[$probid*$mazcsgp+$csgpid]}
-            memlimit=${mlcsg[$probid*$mazcsgp+$csgpid]}
-            score=${sccsg[$probid*$mazcsgp+$csgpid]}
+            timelimit=${tlcsg[$probid*$maxcsgp+$csgpid]}
+            memlimit=${mlcsg[$probid*$maxcsgp+$csgpid]}
+            score=${sccsg[$probid*$maxcsgp+$csgpid]}
             echo "in, out, tl, ml, sc:$inf4data $outf4data $timelimit $memlimit $score"
             inf4test=''
             for i in $inf4prog; do
@@ -526,8 +533,9 @@ for ct in $ctls; do
             pt[ctid*maxprob+probid]=$((pt[ctid*maxprob+probid]+resscore))
             echo "Now score ${pt[ctid*maxprob+probid]}" >&3
          done
-         rm testing/* >&3 2>&3
       done
+      }
+      [ $totest = 0 ]||{
       echo "Total ${pt[ctid*maxprob+probid]}" >> "$uniform/$ct/$prob"
       str_="`gettext "Total score for %1 : %2"`"
       str_=${str_//"%1"/"$ct.$prob"}
@@ -536,6 +544,7 @@ for ct in $ctls; do
       #echo -n " ${pt[ctid*maxprob+probid]}" >> $summary
       }
       tt[ctid]=$((tt[ctid]+pt[ctid*maxprob+probid]))
+      rm testing/* >&3 2>&3
    done
    #echo "$ct total ${tt[ctid]}" >> $uniform
    str_="`gettext "Total score for %1 : %2"`"

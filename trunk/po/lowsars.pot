@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-13 09:57+0800\n"
+"POT-Creation-Date: 2008-04-17 21:07+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,62 +16,70 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../lowsars:141
+#: ../lowsars:147
 msgid "No such parameter:"
 msgstr ""
 
-#: ../lowsars:153
+#: ../lowsars:159
 msgid "Parameter not used: "
 msgstr ""
 
-#: ../lowsars:160
+#: ../lowsars:166
 msgid "File not found: "
 msgstr ""
 
-#: ../lowsars:161
+#: ../lowsars:167
 msgid "No input file specified. "
 msgstr ""
 
-#: ../lowsars:168
+#: ../lowsars:174
 msgid "Lightweight OI Wonderful Scoring And Ranking System"
 msgstr ""
 
-#: ../lowsars:288
+#: ../lowsars:298
 msgid "No such command in config file:"
 msgstr ""
 
-#: ../lowsars:422
+#: ../lowsars:427
+msgid "Not to test %1"
+msgstr ""
+
+#: ../lowsars:436
 msgid "Compiling "
 msgstr ""
 
-#: ../lowsars:425
+#: ../lowsars:439
 msgid "Success"
 msgstr ""
 
-#: ../lowsars:427
+#: ../lowsars:441
 msgid "Failed"
 msgstr ""
 
-#: ../lowsars:432
+#: ../lowsars:447
 msgid "Not to compile."
 msgstr ""
 
-#: ../lowsars:438
+#: ../lowsars:455
 msgid "Testing "
 msgstr ""
 
-#: ../lowsars:487
+#: ../lowsars:512
+msgid "Unknown Tester Error"
+msgstr ""
+
+#: ../lowsars:528
 msgid "s"
 msgstr ""
 
-#: ../lowsars:487
+#: ../lowsars:528
 msgid "Score: "
 msgstr ""
 
-#: ../lowsars:494 ../lowsars:503
+#: ../lowsars:537 ../lowsars:546
 msgid "Total score for %1 : %2"
 msgstr ""
 
-#: ../lowsars:510
+#: ../lowsars:553
 msgid "Judging ended at: "
 msgstr ""
