@@ -1,0 +1,9 @@
+problem a
+input a.in
+output a.out
+judge ignore case emptyline
+cases 1 4
+input a.in#
+output a.ou#
+memory 1000
+end

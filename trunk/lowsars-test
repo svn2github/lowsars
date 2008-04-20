@@ -1,7 +1,7 @@
 #!/bin/bash_by_lowsars
 # NOTE DO NOT EDIT THE ABOVE LINE!
 # lowsars-test: Lowsars single point tester. Completely rewritten replacement for lowsars-1p by Yu Hang (cosechy@gmail.com)
-# Copyright © 2007 Yu Hang, released under GNU General Public License Version 2 or later
+# Copyright © 2007-2008 Yu Hang, released under GNU General Public License Version 2 or later
 # Is it "Light-weighted" anymore?
 # I recommend Advanced Bash-Scripting Guide by Mendel Cooper (http://tldp.org/LDP/abs/html/ chinese version: http://www.linuxsir.org/main/doc/abs/abs3.7cnhtm/) as a bash manual, it helped me a lot.
 

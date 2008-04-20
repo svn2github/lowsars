@@ -1,11 +1,12 @@
 #!/bin/bash
-# Note: this is only for developers, since this can only work on OSes very similar to mine.
+# Note: this is only for developers, since this can only work on OSes similar to mine.
 # TODO: (very hard) rewrite it using autoconf/automake
 
 D_BIN=/usr/bin/
 D_SHARE=/usr/share/lowsars/
-BINFILES="lowsars lowsars-test lowsars-input lowsars-commander"
-LIBFILES="lib/database.sh lib/errorcodes-fp lib/escape.sh"
+BINFILES="lowsars lowsars-test lowsars-cena"
+#BINFILES="lowsars lowsars-test lowsars-input lowsars-commander lowsars-cena"
+LIBFILES="lib/database.sh lib/errorcodes-fp lib/escape.sh lib/cena.xsl"
 echo "Copying the share files..."
 mkdir -p $D_SHARE
 cp $LIBFILES $D_SHARE

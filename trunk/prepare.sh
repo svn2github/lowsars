@@ -14,7 +14,7 @@ check(){
          exit 1
       }
       [ "$2" = "rec" ]&&{
-         echo "$1 not found. Recommended to install it."
+         echo "$1 not found. $1 is needed to $3. Recommended to install it."
       }
    fi
 }
@@ -32,9 +32,10 @@ check tee
 check msgfmt
 check sort
 check msgmerge
-check fpc rec
-check gcc rec
-check g++ rec
+check fpc rec "compile FreePascal programs"
+check gcc rec "compile C programs"
+check g++ rec "compile C++ programs"
+check xsltproc rec "translate the Cena config file to Lowsars style"
 echo "Making i18n files..."
 cd po
 ./gentrans || exit

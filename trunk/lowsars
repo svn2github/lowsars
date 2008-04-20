@@ -94,6 +94,42 @@ gettotalfromuniform(){
    else echo 0
    fi
 }
+makesummary(){
+# Make summary use $1 as the seperator, output to &1
+   echo -n "`gettext "Name"`"
+   for probid in $fullprobls; do
+      echo -n "$1${probname[probid]}"
+   done
+   echo "$1`gettext "Total"`"
+   for ct in $fullctls; do
+      echo -n "$ct"
+      t=0
+      for probid in $fullprobls; do
+	 prob="${probname[probid]}"
+	 p=0
+	 #echo "$uniform/$ct/$prob" >&2
+	 if [ -f "$uniform/$ct/$prob" ]; then
+	    {
+	       p=1
+	       while true; do
+	          read x y z
+	          #echo "$x x $y x $z" >&2
+	          if [ "$x" = "Total" ]; then
+	             p=$y
+	             break
+	          elif [ "$x" = "" ]; then
+	             break
+	          fi
+	          read x
+	       done
+	    } < "$uniform/$ct/$prob"
+	 fi
+	 echo -n "$1$p"
+	 t=$((t+p))
+      done
+      echo "$1$t"
+   done
+}
 maxcsgp=100
 maxprob=100
 isctls=0
@@ -111,7 +147,9 @@ uniform=result/result.uniform
 #olduniform=result/result.olduniform
 friendly=result/result.friendly
 summary=result/result.summary
+summarycsv=result/result.summary.csv
 sorted=result/result.sorted
+sortedcsv=result/result.sorted.csv
 notdone=result/lowsars.notdone
 ctls=
 probls=
@@ -172,7 +210,7 @@ fi
 {
 echo -n "LowSars 0.2.0 alpha -" >&4
 echo `gettext "Lightweight OI Wonderful Scoring And Ranking System"` >&4
-echo "Copyright 2007 Lsz (chinatslsz@hotmail.com)" >&4
+echo "Copyright 2007-2008 Lsz (chinatslsz@hotmail.com)" >&4
 null=/dev/null
 echo Ct. list $ctls >&3
 echo Prob. list $probls >&3
@@ -382,7 +420,6 @@ if [ "$isremove" = 1 ]; then
    done
    rm $notdone
    exit
-# TODO: what to do with other result files??
 fi
 mkdir testing && echo "testing dir. created"
 
@@ -398,7 +435,7 @@ $result.uniform/lsz/plus:
 total 50
 '
 b='"Friendly" format, allow i18n:
-Testing lsz.plus.1 ... Accepted. 0.123s Score:10
+Testing lsz.plus.1(plus1.in)... Accepted. 0.123s Score:10
 ...
 Total score for lsz.plus: 50
 ...
@@ -407,7 +444,11 @@ Total score for lsz: 230
 '
 #echo $ctls > $uniform
 #echo $probnamels >> $uniform
+rm $summary*
+rm $sorted*
+# these are generated according to the "uniform" one.
 rm $friendly
+# TODO: what should be done with "friendly" result files??
 } 2>&3 1>&3
 #真正开始的地方
 ctid=0
@@ -433,6 +474,7 @@ for ct in $ctls; do
          pt[ctid*maxprob+probid]=`gettotalfromuniform "$uniform/$ct/$prob"`
       }
       [ $totest = 1 ]&&{
+      rm "$uniform/$ct/$prob" 2>&3 >&3
       if [ $tocompile = 1 ]; then
          rm $exefn >&3 2>&3
          echo -n "`gettext "Compiling "`$ct.$prob ..." #use lowsars-test to compile
@@ -441,6 +483,7 @@ for ct in $ctls; do
              x3=`gettext "Success"`
          else
              x3=`gettext "Failed"`
+             echo "Total 0" > "$uniform/$ct/$prob"
              totest=2
          fi
          echo "$x3"
@@ -454,7 +497,11 @@ for ct in $ctls; do
       for ((csgpid=1;csgpid<=csgroups[probid];csgpid++)); do
          echo "Entering Gpid $csgpid..." >&3
          for ((csid=csbegin[probid*maxcsgp+csgpid]; csid<=csend[probid*maxcsgp+csgpid]; csid++)); do
-            echo -n "`gettext "Testing "`$ct.$prob.$csid ..."
+            #echo -n "`gettext "Testing "`$ct.$prob.$csid ..."
+            inf4data=${infcsg[$probid*$maxcsgp+$csgpid]//#/$csid}
+            read firstinf4data <<< "$inf4data"
+            firstinf4data="`basename "$firstinf4data"`"
+            echo -n "`gettext "Testing "`$ct.$prob.$csid($firstinf4data)... " | tee -a "$friendly"
             { #>&3
             echo "Entering Csid $csid..."
             #准备i/o文件列表、从数组中获取信息
@@ -467,13 +514,12 @@ for ct in $ctls; do
             echo "$probid*$maxcsgp+$csgpid=$((probid*maxcsgp+csgpid))"
             echo ""
             inf4data=${infcsg[$probid*$maxcsgp+$csgpid]//#/$csid}
-            #inf4data=${inf4data//#/$csid}
             outf4data=${outfcsg[$probid*$maxcsgp+$csgpid]//#/$csid}
-            #outf4data=${outf4data//#/$csid}
             timelimit=${tlcsg[$probid*$maxcsgp+$csgpid]}
             memlimit=${mlcsg[$probid*$maxcsgp+$csgpid]}
             score=${sccsg[$probid*$maxcsgp+$csgpid]}
             echo "in, out, tl, ml, sc:$inf4data $outf4data $timelimit $memlimit $score"
+
             inf4test=''
             for i in $inf4prog; do
                read i1 inf4prog <<< $inf4prog
@@ -529,7 +575,7 @@ for ct in $ctls; do
                echo "$csid $restime $resscore $resstatus"
                echo "$detail"
             }>> $uniform/$ct/$prob
-            echo "$resstatus $restime"`gettext s` `gettext "Score: "`"$resscore" | tee -a $friendly
+            echo "$resstatus $restime"`gettext s` `gettext "Score: "`"$resscore" | tee -a "$friendly"
             pt[ctid*maxprob+probid]=$((pt[ctid*maxprob+probid]+resscore))
             echo "Now score ${pt[ctid*maxprob+probid]}" >&3
          done
@@ -553,47 +599,12 @@ for ct in $ctls; do
    echo "$str_" | tee -a $friendly
    #echo " ${tt[ctid]}" >> $summary
 done
-#date "+%Y %m %d %H %M %S" >> $uniform
 gettext "Judging ended at: " | tee -a $friendly
 date | tee -a $friendly
 #转换格式
 echo "producing summary..." >&3
-{
-   echo -n "Name"
-   for probid in $fullprobls; do
-      echo -n " ${probname[probid]}"
-   done
-   echo " Total"
-   for ct in $fullctls; do
-      echo -n "$ct"
-      t=0
-      for probid in $fullprobls; do
-	 prob="${probname[probid]}"
-	 p=0
-	 #echo "$uniform/$ct/$prob" >&2
-	 if [ -f "$uniform/$ct/$prob" ]; then
-	    {
-	       p=1
-	       while true; do
-	          read x y z
-	          #echo "$x x $y x $z" >&2
-	          if [ "$x" = "Total" ]; then
-	             p=$y
-	             break
-	          elif [ "$x" = "" ]; then
-	             break
-	          fi
-	          read x
-	       done
-	    } < "$uniform/$ct/$prob"
-	 fi
-	 echo -n " $p"
-	 t=$((t+p))
-      done
-      echo " $t"
-   done
-} 1>$summary
-
+makesummary "	" 1>$summary
+makesummary "," 1>$summarycsv
 echo "Starting sort..." >&3
 probid=0
 for prob in $probnamels; do
@@ -601,15 +612,25 @@ for prob in $probnamels; do
    {
       read aaa
       cat <<< "$aaa"
-      cat | sort -g -k $((probid+1)) -r
+      cat | sort -g -k $((probid+1)) -r -t "	"
    } < $summary > $sorted.$probid.$prob
+   {
+      read aaa
+      cat <<< "$aaa"
+      cat | sort -g -k $((probid+1)) -r -t ","
+   } < $summarycsv > $sorted.$probid.$prob.csv
 done
 x=$((probid++))
 {
    read aaa
    cat <<< "$aaa"
-   cat | sort -g -k $((probid+1)) -r
+   cat | sort -g -k $((probid+1)) -r -t "	"
 } < $summary > $sorted
+{
+   read aaa
+   cat <<< "$aaa"
+   cat | sort -g -k $((probid+1)) -r -t ","
+} < $summarycsv > $sortedcsv
 echo "All done." >&3
 rm $notdone
 } 1>$out 3>$verbose 2>$err 4>$header
