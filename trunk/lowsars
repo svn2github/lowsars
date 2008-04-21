@@ -14,29 +14,9 @@ show_usage(){
  echo "Usage: $0 [OPTIONS] CONFIGFILE "'
 CONFIGFILE EXAMPLE:
    
-   problem yhisashax
-     input @.in dict.txt
-     output @.out
-     ignore white emptyline
-     cases 0 5
-        input @/@#.in @/dict.txt
-        output @/@#.out
-        timelimit 1
-        score 10
-     cases 6 8
-        input @/@#.in @/dict.txt
-        output @/@#.out
-        timelimit 2
-        score 15
-     case 9
-        input @/@#.in @/dict2.txt
-        output @/@#.out
-        timelimit 1
-        score 20
-   problem lszisacow
+   problem simple
       input @.in
       output @.out
-      judge score lszjudge %a %o
       cases 0 9
          input @/@#.in
          output @/@#.out
@@ -46,17 +26,18 @@ CONFIGFILE EXAMPLE:
    end
 
  The spaces are not necessary.
+ For more examples, see the example/ directory with the installing files.
  
  OPTIONS:
  -a, --add                        Do not override the existing result
  -c, --contestants [CONTESTANTS]  Only judge contestants in the list
- -C, --get-contestants            No judging, only to get a contestants list
+ -C, --get-contestants            No judging, only to get a contestant list
  -n, --no-compile                 Do not compile
  -r, --remove                     Remove the result (often used with -c or -p)
  -p, --problems [PROBLEMS]        Only judge problems in the list
- -P, --get-problems               No judging, only to get a problems list
+ -P, --get-problems               No judging, only to get a problem list
  -q, --quiet                      Be quiet
- -v, --verbose                    Output some extra information
+ -v, --verbose                    Output some extra debug information
  -V, --test-verbose               More verbose, pass -v to lowsars-test
  --help                           Get this help
  --version                        Show version'
