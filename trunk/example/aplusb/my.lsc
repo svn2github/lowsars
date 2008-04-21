@@ -1,9 +1,11 @@
 problem a
-input a.in
-output a.out
-judge ignore case emptyline
-cases 1 4
-input a.in#
-output a.ou#
-memory 1000
+  input a.in
+  output a.out
+  judge ignore case emptyline
+  cases 1 4
+    input a.in#
+    output a.ou#
+    mlimit 1000
+    tlimit 0.3
+    olimit s*1.5+1
 end
