@@ -18,7 +18,9 @@ Sorry, Lowsars 0.2 does not support Special Judge from Cena file.
 		</xsl:if>
 		<!--TODO what's the parameter of that? Should look at Cena's help.
 		Also, what about wine it? -->
-		input <xsl:value-of select="input/@filename"/>
+		input <xsl:value-of select="input/@filename"/><!--
+		TODO how is multiple input files arranged here??
+		-->
 		output <xsl:value-of select="output/@filename"/>
 		<xsl:for-each select="testcase">
 		case <xsl:number value="position()" />

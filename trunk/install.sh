@@ -20,10 +20,10 @@ for lang in $LANGS; do
 done
 echo "Copying the lowsars-* files..."
 cp $BINFILES $D_BIN
-echo "If anything goes wrong, try copy a bash from Ubuntu to /bin/bash_by_lowsars"
 [ -x /bin/bash_by_lowsars ]||{
-   echo "Copying /bin/bash to /bin/bash_by_lowsars"
-   cp /bin/bash /bin/bash_by_lowsars
+   echo "Soft-linking /bin/bash to /bin/bash_by_lowsars"
+   ln -s /bin/bash /bin/bash_by_lowsars
+   echo "If anything goes wrong, try copy a bash from Ubuntu to /bin/bash_by_lowsars"
 }
 echo "All done."
 

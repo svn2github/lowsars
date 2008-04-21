@@ -2,13 +2,12 @@
 # LowSars (pre-azalea) - Lightweight OI Wonderful Scoring And Ranking System
 # Usage: ./lowsars [OPTIONS] CONFIGFILE (See below)
 # credit: chinatslsz@hotmail.com
-#
 TEXTDOMAINDIR=/usr/share/locale
 TEXTDOMAIN=lowsars
 export TEXTDOMAIN
 export TEXTDOMAINDIR
 show_version(){
- echo "LowSars 0.2-svn-20080420";
+ echo "LowSars 0.2-svn-20080421";
 }
 #显示用法帮助
 show_usage(){
@@ -75,11 +74,40 @@ fi >&3 2>&3
 }
 getstatus(){
 case "$1" in
-  "SIGKILL")retstatus="Memory Limit Exceeded";;
-  "SIGXFSZ")retstatus="Output Limit Exceeded";;
-  *)retstatus="$1";;
+   "SIGKILL")retstatus="Memory Limit Exceeded";;
+   "SIGXFSZ")retstatus="Output Limit Exceeded";;
+   *)retstatus="$1";;
 esac
 echo "$retstatus"
+}
+getstatusi18n(){
+#to make xgettext happy!
+case "$1" in
+   "Accepted")retstatusi18n="`gettext "Accepted"`";;
+   "Wrong Answer")retstatusi18n="`gettext "Wrong Answer"`";;
+   "Compile Error")retstatusi18n="`gettext "Compile Error"`";;
+   "Source Not Found")retstatusi18n="`gettext "Source Not Found"`";;
+   "Time Limit Exceeded")retstatusi18n="`gettext "Time Limit Exceeded"`";;
+   "Memory Limit Exceeded")retstatusi18n="`gettext "Memory Limit Exceeded"`";;
+   "Output Limit Exceeded")retstatusi18n="`gettext "Output Limit Exceeded"`";;
+   "Extra Point")retstatusi18n="`gettext "Extra Point"`";;
+   "Bonus!")retstatusi18n="`gettext "Bonus!"`";;
+   "Compiled Successfully")retstatusi18n="`gettext "Compiled Successfully"`";;
+   "Running Successfully")retstatusi18n="`gettext "Running Successfully"`";;
+   "Partial Point")retstatusi18n="`gettext "Partial Point"`";;
+   "Presentation Error")retstatusi18n="`gettext "Presentation Error"`";;
+   "Excutable Not Found")retstatusi18n="`gettext "Excutable Not Found"`";;
+   "No permission")retstatusi18n="`gettext "No permission"`";;
+   "Unknown run error")retstatusi18n="`gettext "Unknown run error"`";;
+   #"")retstatusi18n="`gettext ""`";;
+   #"")retstatusi18n="`gettext ""`";;
+   "Runtime Error"*)
+      retstatusi18n_rtenum=${1//"Runtime Error "/}
+      retstatusi18n="`gettext "Runtime Error %1"`"
+      retstatusi18n=${retstatusi18n//%1/$retstatusi18n_rtenum};;
+   *)retstatusi18n="$1"
+esac
+echo "$retstatusi18n"
 }
 gettotalfromuniform(){
    gtfu_=
@@ -237,6 +265,7 @@ while [ "$comm" != end ] ; do
           csgroup=0;;
       input)
           para=${para//@/${probname[prob]}}
+          # TODO: multiple input files on seperate lines
           if [ $csgroup = 0 ]; then
             inf[$prob]=$para
             echo "input file for prob $prob ${probname[prob]} : ${inf[prob]}" >&3
@@ -295,9 +324,9 @@ while [ "$comm" != end ] ; do
           mlcsg[$prob*$maxcsgp+$csgroup]=262144
           olcsg[$prob*$maxcsgp+$csgroup]="1.5*s+100"
           sccsg[$prob*$maxcsgp+$csgroup]=10
-          para="data/@/@#.in"
+          para="../data/@/@#.in"
           infcsg[$prob*$maxcsgp+$csgroup]=${para//@/${probname[prob]}}
-          para="data/@/@#.out"
+          para="../data/@/@#.out"
           outfcsg[$prob*$maxcsgp+$csgroup]=${para//@/${probname[prob]}} ;;
       case)
           a=$((csgroup++))
@@ -308,9 +337,9 @@ while [ "$comm" != end ] ; do
           mlcsg[$prob*$maxcsgp+$csgroup]=262144
           olcsg[$prob*$maxcsgp+$csgroup]="1.5*s+100"
           sccsg[$prob*$maxcsgp+$csgroup]=10
-          para="data/@/@#.in"
+          para="../data/@/@#.in"
           infcsg[$prob*$maxcsgp+$csgroup]=${para//@/${probname[prob]}}
-          para="data/@/@#.out"
+          para="../data/@/@#.out"
           outfcsg[$prob*$maxcsgp+$csgroup]=${para//@/${probname[prob]}} ;;
       timelimit|time|tlimit)
           if [ $csgroup = 0 ]; then
@@ -464,6 +493,9 @@ for ct in $ctls; do
    a=$((ctid++))
    tt[$ctid]=0
    echo "Entering Ctid $ctid..." >&3
+   a="`gettext "Start testing %1..."`"
+   a=${a//%1/$ct}
+   echo "$a" | tee -a "$friendly"
    mymkdir "$uniform/$ct" >&3 2>&3
    #echo -n "$ct" >> $summary
    for probid in $probls; do
@@ -474,10 +506,11 @@ for ct in $ctls; do
       exefn="src/$ct/$prob"
       totest=1
       [ "$isadd" = 1 ]&& [ -f "$uniform/$ct/$prob" ] && totest=0
+      echo -n "   " | tee -a "$friendly"
       [ $totest = 0 ]&& {
          a="`gettext "Not to test %1"`"
          a=${a//%1/$ct.$prob}
-         echo "$a"
+         echo "$a" | tee -a "$friendly"
          echo gettotalfromuniform "$uniform/$ct/$prob" >&3
          pt[ctid*maxprob+probid]=`gettotalfromuniform "$uniform/$ct/$prob"`
       }
@@ -485,7 +518,8 @@ for ct in $ctls; do
       rm "$uniform/$ct/$prob" 2>&3 >&3
       if [ $tocompile = 1 ]; then
          rm $exefn >&3 2>&3
-         echo -n "`gettext "Compiling "`$ct.$prob ..." #use lowsars-test to compile
+         a="`gettext "Compiling %1 ..."`"
+         echo -n "${a//%1/$ct.$prob}" | tee -a "$friendly" #use lowsars-test to compile
          a=`lowsars-test $exefn -C* -t0 --real-time`
          echo "lowsars-test $exefn -C* -t0 --real-time" >&3
          read x1 x2 x3 <<< "$a"
@@ -496,10 +530,10 @@ for ct in $ctls; do
              echo "Total 0" > "$uniform/$ct/$prob"
              totest=2
          fi
-         echo "$x3"
+         echo "`getstatusi18n "$x3"`" | tee -a "$friendly"
          rm $exefn.o >&3 2>&3
       else
-         echo "`gettext "Not to compile."`"
+         echo "`gettext "Not to compile."`" | tee -a "$friendly"
       fi
       mv $exefn testing/ >&3 2>&3
       }
@@ -511,7 +545,7 @@ for ct in $ctls; do
             inf4data=${infcsg[$probid*$maxcsgp+$csgpid]//#/$csid}
             read firstinf4data <<< "$inf4data"
             firstinf4data="`basename "$firstinf4data"`"
-            echo -n "`gettext "Testing "`$ct.$prob.$csid($firstinf4data)... " | tee -a "$friendly"
+            echo -n "      `gettext "Testing "`$ct.$prob.$csid($firstinf4data)... " | tee -a "$friendly"
             { #>&3
             echo "Entering Csid $csid..."
             #准备i/o文件列表、从数组中获取信息
@@ -587,11 +621,12 @@ for ct in $ctls; do
             IFS=$ifs
             } >&3
             resstatus=`getstatus "$resstatus"`
+            resstatusi18n="`getstatusi18n "$resstatus"`"
             {
                echo "$csid $restime $resscore $resstatus"
                echo "$detail"
             }>> $uniform/$ct/$prob
-            echo "$resstatus $restime"`gettext s` `gettext "Score: "`"$resscore" | tee -a "$friendly"
+            echo "$resstatusi18n $restime"`gettext s` `gettext "Score: "`"$resscore" | tee -a "$friendly"
             pt[ctid*maxprob+probid]=$((pt[ctid*maxprob+probid]+resscore))
             echo "Now score ${pt[ctid*maxprob+probid]}" >&3
          done
@@ -599,7 +634,7 @@ for ct in $ctls; do
       }
       [ $totest = 0 ]||{
       echo "Total ${pt[ctid*maxprob+probid]}" >> "$uniform/$ct/$prob"
-      str_="`gettext "Total score for %1 : %2"`"
+      str_="      `gettext "Total score for %1 : %2"`"
       str_=${str_//"%1"/"$ct.$prob"}
       str_=${str_//"%2"/"${pt[$ctid*$maxprob+$probid]}"}
       echo "$str_" | tee -a $friendly
@@ -609,7 +644,7 @@ for ct in $ctls; do
       rm testing/* >&3 2>&3
    done
    #echo "$ct total ${tt[ctid]}" >> $uniform
-   str_="`gettext "Total score for %1 : %2"`"
+   str_="   `gettext "Total score for %1 : %2"`"
    str_=${str_//"%1"/"$ct"}
    str_=${str_//"%2"/"${tt[ctid]}"}
    echo "$str_" | tee -a $friendly

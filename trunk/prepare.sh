@@ -28,10 +28,12 @@ check sleep
 check basename
 check dirname
 check bc
+check wc
 check tee
+check gettext
 check msgfmt
 check sort
-check msgmerge
+#check msgmerge
 check fpc rec "compile FreePascal programs"
 check gcc rec "compile C programs"
 check g++ rec "compile C++ programs"
