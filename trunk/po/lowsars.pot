@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-21 20:40+0800\n"
+"POT-Creation-Date: 2008-04-21 21:04+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,99 +16,99 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../lowsars:87
+#: ../lowsars:86
 msgid "Accepted"
 msgstr ""
 
-#: ../lowsars:88
+#: ../lowsars:87
 msgid "Wrong Answer"
 msgstr ""
 
-#: ../lowsars:89
+#: ../lowsars:88
 msgid "Compile Error"
 msgstr ""
 
-#: ../lowsars:90
+#: ../lowsars:89
 msgid "Source Not Found"
 msgstr ""
 
-#: ../lowsars:91
+#: ../lowsars:90
 msgid "Time Limit Exceeded"
 msgstr ""
 
-#: ../lowsars:92
+#: ../lowsars:91
 msgid "Memory Limit Exceeded"
 msgstr ""
 
-#: ../lowsars:93
+#: ../lowsars:92
 msgid "Output Limit Exceeded"
 msgstr ""
 
-#: ../lowsars:94
+#: ../lowsars:93
 msgid "Extra Point"
 msgstr ""
 
-#: ../lowsars:95
+#: ../lowsars:94
 msgid "Bonus!"
 msgstr ""
 
-#: ../lowsars:96
+#: ../lowsars:95
 msgid "Compiled Successfully"
 msgstr ""
 
-#: ../lowsars:97
+#: ../lowsars:96
 msgid "Running Successfully"
 msgstr ""
 
-#: ../lowsars:98
+#: ../lowsars:97
 msgid "Partial Point"
 msgstr ""
 
-#: ../lowsars:99
+#: ../lowsars:98
 msgid "Presentation Error"
 msgstr ""
 
-#: ../lowsars:100
+#: ../lowsars:99
 msgid "Excutable Not Found"
 msgstr ""
 
-#: ../lowsars:101
+#: ../lowsars:100
 msgid "No permission"
 msgstr ""
 
-#: ../lowsars:102
+#: ../lowsars:101
 msgid "Unknown run error"
 msgstr ""
 
-#: ../lowsars:107
+#: ../lowsars:106
 msgid "Runtime Error %1"
 msgstr ""
 
-#: ../lowsars:132
+#: ../lowsars:131
 msgid "Name"
 msgstr ""
 
-#: ../lowsars:136
+#: ../lowsars:135
 msgid "Total"
 msgstr ""
 
-#: ../lowsars:216
+#: ../lowsars:215
 msgid "No such parameter:"
 msgstr ""
 
-#: ../lowsars:227
+#: ../lowsars:226
 msgid "Parameter not used: "
 msgstr ""
 
-#: ../lowsars:233
+#: ../lowsars:232
 msgid "File not found: "
 msgstr ""
 
-#: ../lowsars:234
+#: ../lowsars:233
 msgid "No input file specified. "
 msgstr ""
 
-#: ../lowsars:241
+#: ../lowsars:240
 msgid "Lightweight OI Wonderful Scoring And Ranking System"
 msgstr ""
 
