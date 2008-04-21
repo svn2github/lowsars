@@ -8,7 +8,7 @@ TEXTDOMAIN=lowsars
 export TEXTDOMAIN
 export TEXTDOMAINDIR
 show_version(){
- echo "LowSars 0.2-svn-20080417";
+ echo "LowSars 0.2-svn-20080420";
 }
 #显示用法帮助
 show_usage(){
@@ -52,7 +52,6 @@ CONFIGFILE EXAMPLE:
  -a, --add                        Do not override the existing result
  -c, --contestants [CONTESTANTS]  Only judge contestants in the list
  -C, --get-contestants            No judging, only to get a contestants list
-X-d, --generate-data              Use the standard program to generate data
  -n, --no-compile                 Do not compile
  -r, --remove                     Remove the result (often used with -c or -p)
  -p, --problems [PROBLEMS]        Only judge problems in the list
@@ -61,10 +60,7 @@ X-d, --generate-data              Use the standard program to generate data
  -v, --verbose                    Output some extra information
  -V, --test-verbose               More verbose, pass -v to lowsars-test
  --help                           Get this help
- --version                        Show version
- 
-Options with an X have not been implemented yet.
- '
+ --version                        Show version'
 }
 mymkdir(){
 if [ ! -d "$1" ]; then
@@ -76,6 +72,14 @@ mymkfile(){
 if [ -f "$1" ]; then
    rm -R "$1"
 fi >&3 2>&3
+}
+getstatus(){
+case "$1" in
+  "SIGKILL")retstatus="Memory Limit Exceeded";;
+  "SIGXFSZ")retstatus="Output Limit Exceeded";;
+  *)retstatus="$1";;
+esac
+echo "$retstatus"
 }
 gettotalfromuniform(){
    gtfu_=
@@ -161,7 +165,6 @@ while if ! getopts :aqcpndDvVCrP-: param
     param="--${OPTARG%%=*}"
     arg="`[ "$param" = "--$OPTARG" ]||echo ${OPTARG#*=}=`";:
   else param="-$param"; arg="$OPTARG=";:; fi; do
-#while [ "$1" != "" ]; do
   isctls_=$isctls
   isprobls_=$isprobls
   isctls=0
@@ -181,9 +184,7 @@ while if ! getopts :aqcpndDvVCrP-: param
     -r|--remove) isremove=1;;
     -C|--get-contestants) onlyc=1 header=/dev/null;;
     -P|--get-problems) onlyp=1 header=/dev/null;;
-    #-*) echo `gettext "No such parameter:"` $1 1>&2;;
     -\?|-*) echo `gettext "No such parameter:"` $OPTARG 1>&2;;
-    #*) arg="$1"
     "")
       isctls=$isctls_
       isprobls=$isprobls_
@@ -198,7 +199,6 @@ while if ! getopts :aqcpndDvVCrP-: param
         echo "$arg" 1>&2
       fi;;
   esac
-  #shift 1
 done
 if [ ! -e "$cfgfn" ]; then
    [ "$cfgfn" = "" ]|| gettext "File not found: "
@@ -208,7 +208,7 @@ if [ ! -e "$cfgfn" ]; then
    exit 1
 fi
 {
-echo -n "LowSars 0.2.0 alpha -" >&4
+echo -n "LowSars -" >&4
 echo `gettext "Lightweight OI Wonderful Scoring And Ranking System"` >&4
 echo "Copyright 2007-2008 Lsz (chinatslsz@hotmail.com)" >&4
 null=/dev/null
@@ -292,7 +292,8 @@ while [ "$comm" != end ] ; do
           read csbegin[$prob*$maxcsgp+$csgroup] csend[$prob*$maxcsgp+$csgroup] <<< "$para"
           echo "case $csgroup : ${csbegin[$prob*$maxcsgp+$csgroup]} - ${csend[$prob*$maxcsgp+$csgroup]}" >&3
           tlcsg[$prob*$maxcsgp+$csgroup]=1
-          mlcsg[$prob*$maxcsgp+$csgroup]=204800
+          mlcsg[$prob*$maxcsgp+$csgroup]=262144
+          olcsg[$prob*$maxcsgp+$csgroup]="1.5*s+100"
           sccsg[$prob*$maxcsgp+$csgroup]=10
           para="data/@/@#.in"
           infcsg[$prob*$maxcsgp+$csgroup]=${para//@/${probname[prob]}}
@@ -304,13 +305,14 @@ while [ "$comm" != end ] ; do
           read csbegin[$prob*$maxcsgp+$csgroup] csend[$prob*$maxcsgp+$csgroup] <<< "$para $para"
           echo "case $csgroup : ${csbegin[$prob*$maxcsgp+$csgroup]} - ${csend[$prob*$maxcsgp+$csgroup]}" >&3
           tlcsg[$prob*$maxcsgp+$csgroup]=1
-          mlcsg[$prob*$maxcsgp+$csgroup]=204800
+          mlcsg[$prob*$maxcsgp+$csgroup]=262144
+          olcsg[$prob*$maxcsgp+$csgroup]="1.5*s+100"
           sccsg[$prob*$maxcsgp+$csgroup]=10
           para="data/@/@#.in"
           infcsg[$prob*$maxcsgp+$csgroup]=${para//@/${probname[prob]}}
           para="data/@/@#.out"
           outfcsg[$prob*$maxcsgp+$csgroup]=${para//@/${probname[prob]}} ;;
-      timelimit)
+      timelimit|time|tlimit)
           if [ $csgroup = 0 ]; then
             echo "unable to set timelimit outside of a case!!" >&2
             exit 1
@@ -326,13 +328,21 @@ while [ "$comm" != end ] ; do
             sccsg[$prob*$maxcsgp+$csgroup]=$para
             echo "score for csgp $csgroup of prob $prob ${probname[prob]} : ${sccsg[$prob*$maxcsgp+$csgroup]}" >&3
           fi;;
-      memory)
+      memory|memorylimit|mlimit)
           if [ $csgroup = 0 ]; then
             echo "unable to set memorylimit outside of a case!!" >&2
             exit 1
           else
             mlcsg[$prob*$maxcsgp+$csgroup]=$para
             echo "memorylimit for csgp $csgroup of prob $prob ${probname[prob]} : ${mlcsg[$prob*$maxcsgp+$csgroup]}" >&3
+          fi;;
+      outlimit|olimit|outputlimit)
+          if [ $csgroup = 0 ]; then
+            echo "unable to set outputlimit outside of a case!!" >&2
+            exit 1
+          else
+            olcsg[$prob*$maxcsgp+$csgroup]=$para
+            echo "outputlimit for csgp $csgroup of prob $prob ${probname[prob]} : ${olcsg[$prob*$maxcsgp+$csgroup]}" >&3
           fi;;
       "");;
       *) gettext "No such command in config file:" 1>&2
@@ -442,8 +452,6 @@ Total score for lsz.plus: 50
 Total score for lsz: 230
 ...
 '
-#echo $ctls > $uniform
-#echo $probnamels >> $uniform
 rm $summary*
 rm $sorted*
 # these are generated according to the "uniform" one.
@@ -461,11 +469,11 @@ for ct in $ctls; do
    for probid in $probls; do
       prob=${probname[probid]}
       echo "Entering Probid $probid $prob..." >&3
-      [ "$isremove" = 1 ] && mymkfile $uniform/$ct/$prob
+      [ "$isremove" = 1 ] && mymkfile "$uniform/$ct/$prob"
       pt[$ctid*$maxprob+$probid]=0
       exefn="src/$ct/$prob"
       totest=1
-      [ "$isadd" = 1 ]&& [ -f $uniform/$ct/$prob ] && totest=0
+      [ "$isadd" = 1 ]&& [ -f "$uniform/$ct/$prob" ] && totest=0
       [ $totest = 0 ]&& {
          a="`gettext "Not to test %1"`"
          a=${a//%1/$ct.$prob}
@@ -478,11 +486,13 @@ for ct in $ctls; do
       if [ $tocompile = 1 ]; then
          rm $exefn >&3 2>&3
          echo -n "`gettext "Compiling "`$ct.$prob ..." #use lowsars-test to compile
-         lowsars-test $exefn -C* -t0 --real-time 2>&3 | read x1 x2 x3
+         a=`lowsars-test $exefn -C* -t0 --real-time`
+         echo "lowsars-test $exefn -C* -t0 --real-time" >&3
+         read x1 x2 x3 <<< "$a"
+         echo "$x1 $x2 $x3" >&3
          if [ -f "$exefn" ]; then
              x3=`gettext "Success"`
          else
-             x3=`gettext "Failed"`
              echo "Total 0" > "$uniform/$ct/$prob"
              totest=2
          fi
@@ -519,7 +529,11 @@ for ct in $ctls; do
             memlimit=${mlcsg[$probid*$maxcsgp+$csgpid]}
             score=${sccsg[$probid*$maxcsgp+$csgpid]}
             echo "in, out, tl, ml, sc:$inf4data $outf4data $timelimit $memlimit $score"
-
+            tmp=`wc -c -- "$outf4data"`
+            read out4datasize tmp <<< "$tmp"
+            outlimitexpr=${olcsg[$probid*$maxcsgp+$csgpid]//s/$out4datasize}
+            outlimit=`bc <<<"$outlimitexpr"`
+            outlimit=${outlimit%%.*}
             inf4test=''
             for i in $inf4prog; do
                read i1 inf4prog <<< $inf4prog
@@ -545,6 +559,7 @@ for ct in $ctls; do
 	    i=$((i+1)); calling[$i]="$outf4data"
 	    i=$((i+1)); calling[$i]="-t$timelimit"
 	    i=$((i+1)); calling[$i]="-m$memlimit"
+	    i=$((i+1)); calling[$i]="-o$outlimit"
 	    i=$((i+1)); calling[$i]="--score=$score"
 	    i=$((i+1)); calling[$i]="--real-time"
 	    [ "$vverbose" = 1 ]&&{
@@ -571,6 +586,7 @@ for ct in $ctls; do
             } <<< $resstr
             IFS=$ifs
             } >&3
+            resstatus=`getstatus "$resstatus"`
             {
                echo "$csid $restime $resscore $resstatus"
                echo "$detail"
