@@ -1,6 +1,6 @@
 SHELL=/bin/sh
 .PHONY: all
-all :
+all : $(shfiles)
 	$(MAKE) -C po all
 	$(MAKE) -C lib all
 .PHONY: clean
@@ -8,7 +8,7 @@ clean :
 	$(MAKE) -C po clean
 	$(MAKE) -C lib clean
 .PHONY: install
-install :
+install : $(shfiles) $(docfiles)
 	cp $(shfiles) $(bindir)/
 	mkdir -p $(docdir)
 	cp -r $(docfiles) $(docdir)/
@@ -16,4 +16,14 @@ install :
 	$(MAKE) -C lib install
 ifdef bash2use
 	ln -s $(bash2use) /bin/bash_by_lowsars
+endif
+.PHONY: uninstall
+uninstall:
+	$(MAKE) -C lib uninstall
+	$(MAKE) -C po uninstall
+	rm -rf $(addprefix $(docdir)/,$(docfiles))
+	-rmdir -p --ignore-fail-on-non-empty $(docdir)
+	rm -f $(addprefix $(bindir)/,$(shfiles))
+ifdef bash2use
+	rm -f /bin/bash_by_lowsars
 endif

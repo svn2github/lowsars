@@ -1,20 +1,20 @@
 #!/bin/bash
 # Note: this can only work on OSes very similar to mine.
 
+set -e
+
 check(){
    echo -n "checking for $1..."
-   a=`which $1`
-   if [ "$a" != "" ]; then
+   if a="`which -- $1`"; then
       echo $a
    else
       echo "no"
-      [ "$2" = "" ]&&{
+      if [ "$2" = "" ]; then
          echo "$1 not found. Please install it."
          exit 1
-      }
-      [ "$2" = "rec" ]&&{
-         echo "$1 not found. $1 is needed to $3. Recommended to install it."
-      }
+      else
+         echo "$1 not found. $1 is needed to $2. Recommended to install it."
+      fi
    fi
 }
 check bash
@@ -33,53 +33,53 @@ check gettext
 check msgfmt
 check sort
 #check msgmerge
-check fpc rec "compile FreePascal programs"
-check gcc rec "compile C programs"
-check g++ rec "compile C++ programs"
-check xsltproc rec "translate the Cena config file to Lowsars style"
-shfiles=
-shfiles[1]="lowsars"
-shfiles[2]="lowsars-cena"
-shfiles[3]="lowsars-test"
-libfiles=
-libfiles[1]="database.sh"
-libfiles[2]="errorcodes-fp"
-libfiles[3]="escape.sh"
-libfiles[4]="cena.xsl"
-docfiles=
-docfiles[1]="COPYING"
-docfiles[2]="example"
+check fpc "compile FreePascal programs"
+check gcc "compile C programs"
+check g++ "compile C++ programs"
+check xsltproc "translate the Cena config file to Lowsars style"
+
+shfiles=(lowsars lowsars-cena lowsars-test)
+libfiles=(errorcodes-fp escape.sh cena.xsl)
+docfiles=(COPYING example)
 docdir="/usr/share/doc/lowsars"
 localepath1=/usr/share/locale
 localepath2=LC_MESSAGES
+locales=(zh_CN)
 bindir=/usr/bin
 libdir=/usr/share/lowsars
 
-rm po/Makefile
-echo "# Don't edit this file. Edit Makefile.in instead!" >> po/Makefile
-echo -n "shfiles=" >> po/Makefile
-for f in ${shfiles[@]}; do
-   echo -n " ../$f" >> po/Makefile
+dir=`dirname -- "$0"`
+{
+echo "# Don't edit this file. Edit Makefile.in instead!"
+echo -n "shfiles="
+for f in "${shfiles[@]}"; do
+   echo -n " ../$f"
 done
-echo >> po/Makefile
-echo "localepath1=$localepath1" >> po/Makefile
-echo "localepath2=$localepath2" >> po/Makefile
-cat po/Makefile.in >> po/Makefile
+echo
+echo "localepath1=$localepath1"
+echo "localepath2=$localepath2"
+echo "locales=${locales[*]}"
+cat "$dir/po/Makefile.in"
+} > "$dir/po/Makefile"
 
-rm lib/Makefile
-echo "# Don't edit this file. Edit Makefile.in instead!" >> lib/Makefile
-echo "libdir=$libdir" >> lib/Makefile
-echo "libfiles=${libfiles[@]}" >> lib/Makefile
-cat lib/Makefile.in >> lib/Makefile
+{
+echo "# Don't edit this file. Edit Makefile.in instead!"
+echo "libdir=$libdir"
+echo "libfiles=${libfiles[*]}"
+cat "$dir/lib/Makefile.in"
+} > "$dir/lib/Makefile"
 
-rm Makefile
-echo "# Don't edit this file. Edit Makefile.in instead!" >> Makefile
+{
+echo "# Don't edit this file. Edit Makefile.in instead!"
 [ -x /bin/bash_by_lowsars ]||{
-    echo "bash2use=/bin/bash" >> Makefile
+    echo "bash2use=`which bash`"
 }
-echo "shfiles=${shfiles[@]}" >> Makefile
-echo "docfiles=${docfiles[@]}" >> Makefile
-echo "docdir=$docdir" >> Makefile
-cat Makefile.in >> Makefile
+echo "shfiles=${shfiles[*]}"
+echo "bindir=$bindir"
+echo "docfiles=${docfiles[*]}"
+echo "docdir=$docdir"
+cat "$dir/Makefile.in"
+} > "$dir/Makefile"
 
 echo "Done. run make now."
+

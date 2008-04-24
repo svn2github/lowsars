@@ -1,16 +1,29 @@
 SHELL=/bin/sh
+mofiles=$(addsuffix .mo,$(locales))
+pofiles=$(addsuffix .po,$(locales))
+installlocales=$(addprefix install-locale-,$(locales))
+uninstalllocales=$(addprefix uninstall-locale-,$(locales))
 .PHONY: all
-all : zh_CN.mo
+all : $(mofiles)
 lowsars.pot : $(shfiles)
 	xgettext $(shfiles) -j -L Shell -o lowsars.pot
-zh_CN.po : lowsars.pot
-	msgmerge zh_CN.po lowsars.pot -o zh_CN.po
-zh_CN.mo : zh_CN.po
-	msgfmt -f zh_CN.po -o zh_CN.mo
+$(pofiles) : lowsars.pot
+	msgmerge $@ lowsars.pot -o $@
+%.mo : %.po
+	msgfmt -f $< -o $@
 .PHONY: clean
 clean : 
-	-rm zh_CN.mo
-.PHONY: install
-install : zh_CN.mo
-	mkdir -p $(localepath1)/zh_CN/$(localepath2)
-	cp zh_CN.mo $(localepath1)/zh_CN/$(localepath2)/lowsars.mo
+	rm -f $(mofiles)
+.PHONY: install $(installlocales)
+install : $(installlocales)
+install-locale-% : localepath=$(localepath1)/$(patsubst install-locale-%,%,$@)/$(localepath2)
+$(installlocales) : install-locale-% : %.mo
+	mkdir -p $(localepath)
+	cp $< $(localepath)/lowsars.mo
+.PHONY: uninstall $(uninstalllocales)
+uninstall : $(uninstalllocales)
+uninstall-locale-% : localepath=$(localepath1)/$(patsubst uninstall-locale-%,%,$@)/$(localepath2)
+$(uninstalllocales) :
+	rm -f $(localepath)/lowsars.mo
+	-rmdir -p --ignore-fail-on-non-empty $(localepath)
+
