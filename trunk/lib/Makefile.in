@@ -1,0 +1,10 @@
+SHELL=/bin/sh
+#libfiles=lib/database.sh lib/errorcodes-fp lib/escape.sh lib/cena.xsl
+.PHONY: all
+all :
+.PHONY: clean
+clean :
+.PHONY: install
+install : $(libfiles)
+	mkdir -p $(libdir)
+	cp $(libfiles) $(libdir)/
