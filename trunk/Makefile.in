@@ -1,0 +1,19 @@
+SHELL=/bin/sh
+.PHONY: all
+all :
+	$(MAKE) -C po all
+	$(MAKE) -C lib all
+.PHONY: clean
+clean :
+	$(MAKE) -C po clean
+	$(MAKE) -C lib clean
+.PHONY: install
+install :
+	cp $(shfiles) $(bindir)/
+	mkdir -p $(docdir)
+	cp -r $(docfiles) $(docdir)/
+	$(MAKE) -C po install
+	$(MAKE) -C lib install
+ifdef bash2use
+	ln -s $(bash2use) /bin/bash_by_lowsars
+endif
