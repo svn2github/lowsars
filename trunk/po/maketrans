@@ -1,7 +1,6 @@
 #!/bin/sh
 BINFILES="../lowsars ../lowsars-test"
 # Make the lowsars.pot file.
-cp lowsars.pot lowsars.pot.bak
-xgettext $BINFILES -L Shell -o lowsars.pot && rm lowsars.pot.bak
+xgettext $BINFILES -j -L Shell -o lowsars.pot
 # Add more files here in the future.
 

@@ -1,0 +1,16 @@
+SHELL=/bin/sh
+.PHONY: all
+all : zh_CN.mo
+lowsars.pot : $(shfiles)
+	xgettext $(shfiles) -j -L Shell -o lowsars.pot
+zh_CN.po : lowsars.pot
+	msgmerge zh_CN.po lowsars.pot -o zh_CN.po
+zh_CN.mo : zh_CN.po
+	msgfmt -f zh_CN.po -o zh_CN.mo
+.PHONY: clean
+clean : 
+	-rm zh_CN.mo
+.PHONY: install
+install : zh_CN.mo
+	mkdir -p $(localepath1)/zh_CN/$(localepath2)
+	cp zh_CN.mo $(localepath1)/zh_CN/$(localepath2)/lowsars.mo

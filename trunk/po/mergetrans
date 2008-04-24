@@ -9,7 +9,5 @@ POFILE=lowsars
 for lang in $LANGS
 do
 	echo $lang
-	mv "$lang/$POFILE.po" "$lang/$POFILE.po.bak"
-	msgmerge -o "$lang/$POFILE.po" "$lang/$POFILE.po.bak" "$POFILE.pot" \
-	  && rm "$lang/$POFILE.po.bak"
+	msgmerge -U "$lang/$POFILE.po" "$POFILE.pot"
 done
