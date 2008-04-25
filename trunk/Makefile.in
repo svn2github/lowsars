@@ -27,3 +27,8 @@ uninstall:
 ifdef bash2use
 	rm -f /bin/bash_by_lowsars
 endif
+.PHONY: shax 囧
+shax:
+	@echo 囧
+囧: shax
+
