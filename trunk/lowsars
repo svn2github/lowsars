@@ -2,6 +2,7 @@
 # LowSars (pre-azalea) - Lightweight OI Wonderful Scoring And Ranking System
 # Usage: ./lowsars [OPTIONS] CONFIGFILE (See below)
 # credit: chinatslsz@hotmail.com
+LOWSARS_BINDIR=`dirname "$0"`
 TEXTDOMAINDIR=/usr/share/locale
 TEXTDOMAIN=lowsars
 export TEXTDOMAIN
@@ -501,8 +502,8 @@ for ct in $ctls; do
          rm $exefn >&3 2>&3
          a="`gettext "Compiling %1 ..."`"
          echo -n "${a//%1/$ct.$prob}" | tee -a "$friendly" #use lowsars-test to compile
-         a=`lowsars-test $exefn -C* -t0 --real-time`
-         echo "lowsars-test $exefn -C* -t0 --real-time" >&3
+         a=`$LOWSARS_BINDIR/lowsars-test $exefn -C* -t0 --real-time`
+         echo "$LOWSARS_BINDIR/lowsars-test $exefn -C* -t0 --real-time" >&3
          read x1 x2 x3 <<< "$a"
          echo "$x1 $x2 $x3" >&3
          if [ -f "$exefn" ]; then
@@ -562,7 +563,7 @@ for ct in $ctls; do
 #	    [ "$vverbose" = 1 ]&& calling="$calling -v"
 #	    [ -n "$spj[probid]" ]&& calling="$calling ${spj[probid]}"
 	    calling=()
-	    calling[1]=lowsars-test
+	    calling[1]=$LOWSARS_BINDIR/lowsars-test
 	    calling[2]="./$baseexefn"
 	    i=3
 	    while [ -n "$inf4test" ]; do
