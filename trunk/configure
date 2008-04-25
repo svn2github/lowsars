@@ -3,6 +3,26 @@
 
 set -e
 
+prefix=/usr/local
+
+varname=
+for i in "$@"; do
+   if [ "$varname" = "" ]; then
+      case "$i" in
+         --prefix)varname=prefix;;
+         --prefix=*)prefix="${i#*=}";;
+         *)echo "unknown option \`$i'"; exit 1;;
+      esac
+   else
+      declare $varname="$i"
+      varname=
+   fi
+done
+[ "$varname" = "" ]||{
+   echo "option \`$varname' requires an argument"
+   exit 1
+}
+
 check(){
    echo -n "checking for $1..."
    if a="`which -- $1`"; then
@@ -41,12 +61,12 @@ check xsltproc "translate the Cena config file to Lowsars style"
 shfiles=(lowsars lowsars-cena lowsars-test)
 libfiles=(errorcodes-fp escape.sh cena.xsl)
 docfiles=(COPYING example)
-docdir="/usr/share/doc/lowsars"
-localepath1=/usr/share/locale
+docdir="$prefix/share/doc/lowsars"
+localepath1="$prefix/share/locale"
 localepath2=LC_MESSAGES
 locales=(zh_CN)
-bindir=/usr/bin
-libdir=/usr/share/lowsars
+bindir="$prefix/bin"
+libdir="$prefix/share/lowsars"
 
 dir=`dirname -- "$0"`
 {

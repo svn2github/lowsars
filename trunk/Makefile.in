@@ -9,6 +9,7 @@ clean :
 	$(MAKE) -C lib clean
 .PHONY: install
 install : $(shfiles) $(docfiles)
+	mkdir -p $(bindir)
 	cp $(shfiles) $(bindir)/
 	mkdir -p $(docdir)
 	cp -r $(docfiles) $(docdir)/
