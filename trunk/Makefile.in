@@ -16,7 +16,8 @@ install : $(shfiles) $(docfiles)
 	$(MAKE) -C po install
 	$(MAKE) -C lib install
 ifdef bash2use
-	ln -s $(bash2use) /bin/bash_by_lowsars
+	mkdir -p $(DESTDIR)/bin
+	ln -s $(bash2use) $(DESTDIR)/bin/bash_by_lowsars
 endif
 .PHONY: uninstall
 uninstall:
@@ -25,9 +26,26 @@ uninstall:
 	rm -rf $(addprefix $(docdir)/,$(docfiles))
 	-rmdir -p --ignore-fail-on-non-empty $(docdir)
 	rm -f $(addprefix $(bindir)/,$(shfiles))
+	-rmdir -p --ignore-fail-on-non-empty $(bindir)
 ifdef bash2use
-	rm -f /bin/bash_by_lowsars
+	rm -f $(DESTDIR)/bin/bash_by_lowsars
+	-rmdir -p --ignore-fail-on-non-empty $(DESTDIR)/bin
 endif
+deb-package:: $(shfiles) $(docfiles) po lib
+	$(MAKE) install DESTDIR=`pwd`/deb-package
+	$(MAKE) deb-package/DEBIAN/md5sums
+deb-package/DEBIAN/md5sums: deb-package
+	mkdir -p deb-package/DEBIAN
+	cd deb-package && md5sum `find * -not -type d -and -not -name DEBIAN` > DEBIAN/md5sums
+deb-package:: deb-package/DEBIAN/control
+deb-package/DEBIAN/control: deb-control
+	mkdir -p deb-package/DEBIAN
+	cp deb-control deb-package/DEBIAN/control
+lowsars.deb: deb-package deb-package/DEBIAN/md5sums
+	dpkg-deb -b deb-package lowsars.deb
+.PHONY: package-clean
+package-clean:
+	-rm -rf deb-package
 .PHONY: shax 囧
 shax:
 	@echo 囧

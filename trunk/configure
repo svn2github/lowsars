@@ -61,12 +61,12 @@ check xsltproc "translate the Cena config file to Lowsars style"
 shfiles=(lowsars lowsars-cena lowsars-test)
 libfiles=(errorcodes-fp escape.sh cena.xsl)
 docfiles=(COPYING example)
-docdir="$prefix/share/doc/lowsars"
-localepath1="$prefix/share/locale"
+docdir="\$(DESTDIR)$prefix/share/doc/lowsars"
+localepath1="\$(DESTDIR)$prefix/share/locale"
 localepath2=LC_MESSAGES
 locales=(zh_CN)
-bindir="$prefix/bin"
-libdir="$prefix/share/lowsars"
+bindir="\$(DESTDIR)$prefix/bin"
+libdir="\$(DESTDIR)$prefix/share/lowsars"
 
 dir=`dirname -- "$0"`
 {
