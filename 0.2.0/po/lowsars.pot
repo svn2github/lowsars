@@ -1,0 +1,161 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-04-26 17:48+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../lowsars:86 ../lowsars:68
+msgid "Accepted"
+msgstr ""
+
+#: ../lowsars:87 ../lowsars:69
+msgid "Wrong Answer"
+msgstr ""
+
+#: ../lowsars:88 ../lowsars:70
+msgid "Compile Error"
+msgstr ""
+
+#: ../lowsars:89 ../lowsars:71
+msgid "Source Not Found"
+msgstr ""
+
+#: ../lowsars:90 ../lowsars:72
+msgid "Time Limit Exceeded"
+msgstr ""
+
+#: ../lowsars:91 ../lowsars:73
+msgid "Memory Limit Exceeded"
+msgstr ""
+
+#: ../lowsars:92 ../lowsars:74
+msgid "Output Limit Exceeded"
+msgstr ""
+
+#: ../lowsars:93 ../lowsars:75
+msgid "Extra Point"
+msgstr ""
+
+#: ../lowsars:94 ../lowsars:76
+msgid "Bonus!"
+msgstr ""
+
+#: ../lowsars:95 ../lowsars:77
+msgid "Compiled Successfully"
+msgstr ""
+
+#: ../lowsars:96 ../lowsars:78
+msgid "Running Successfully"
+msgstr ""
+
+#: ../lowsars:97 ../lowsars:79
+msgid "Partial Point"
+msgstr ""
+
+#: ../lowsars:98 ../lowsars:80
+msgid "Presentation Error"
+msgstr ""
+
+#: ../lowsars:99 ../lowsars:81
+msgid "Excutable Not Found"
+msgstr ""
+
+#: ../lowsars:100 ../lowsars:82
+msgid "No permission"
+msgstr ""
+
+#: ../lowsars:101 ../lowsars:83
+msgid "Unknown run error"
+msgstr ""
+
+#: ../lowsars:106 ../lowsars:88
+msgid "Runtime Error %1"
+msgstr ""
+
+#: ../lowsars:131 ../lowsars:113
+msgid "Name"
+msgstr ""
+
+#: ../lowsars:135 ../lowsars:117
+msgid "Total"
+msgstr ""
+
+#: ../lowsars:215 ../lowsars:197
+msgid "No such parameter:"
+msgstr ""
+
+#: ../lowsars:226 ../lowsars:208
+msgid "Parameter not used: "
+msgstr ""
+
+#: ../lowsars:232 ../lowsars:214
+msgid "File not found: "
+msgstr ""
+
+#: ../lowsars:233 ../lowsars:215
+msgid "No input file specified. "
+msgstr ""
+
+#: ../lowsars:240 ../lowsars:222
+msgid "Lightweight OI Wonderful Scoring And Ranking System"
+msgstr ""
+
+#: ../lowsars:377 ../lowsars:359
+msgid "No such command in config file:"
+msgstr ""
+
+#: ../lowsars:496 ../lowsars:478
+msgid "Start testing %1..."
+msgstr ""
+
+#: ../lowsars:511 ../lowsars:493
+msgid "Not to test %1"
+msgstr ""
+
+#: ../lowsars:521 ../lowsars:503
+msgid "Compiling %1 ..."
+msgstr ""
+
+#: ../lowsars:528 ../lowsars:510
+msgid "Success"
+msgstr ""
+
+#: ../lowsars:536 ../lowsars:518
+msgid "Not to compile."
+msgstr ""
+
+#: ../lowsars:548 ../lowsars:530
+msgid "Testing "
+msgstr ""
+
+#: ../lowsars:611 ../lowsars:593
+msgid "Unknown Tester Error"
+msgstr ""
+
+#: ../lowsars:629 ../lowsars:611
+msgid "s"
+msgstr ""
+
+#: ../lowsars:629 ../lowsars:611
+msgid "Score: "
+msgstr ""
+
+#: ../lowsars:637 ../lowsars:647 ../lowsars:619 ../lowsars:629
+msgid "Total score for %1 : %2"
+msgstr ""
+
+#: ../lowsars:653 ../lowsars:635
+msgid "Judging ended at: "
+msgstr ""

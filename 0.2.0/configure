@@ -1,0 +1,105 @@
+#!/bin/bash
+# Note: this can only work on OSes very similar to mine.
+
+set -e
+
+prefix=/usr/local
+
+varname=
+for i in "$@"; do
+   if [ "$varname" = "" ]; then
+      case "$i" in
+         --prefix)varname=prefix;;
+         --prefix=*)prefix="${i#*=}";;
+         *)echo "unknown option \`$i'"; exit 1;;
+      esac
+   else
+      declare $varname="$i"
+      varname=
+   fi
+done
+[ "$varname" = "" ]||{
+   echo "option \`$varname' requires an argument"
+   exit 1
+}
+
+check(){
+   echo -n "checking for $1..."
+   if a="`which -- $1`"; then
+      echo $a
+   else
+      echo "no"
+      if [ "$2" = "" ]; then
+         echo "$1 not found. Please install it."
+         exit 1
+      else
+         echo "$1 not found. $1 is needed to $2. Recommended to install it."
+      fi
+   fi
+}
+check bash
+check mv
+check cp
+check ls
+check echo
+check cat
+check sleep
+check basename
+check dirname
+check bc
+check wc
+check tee
+check gettext
+check msgfmt
+check sort
+#check msgmerge
+check fpc "compile FreePascal programs"
+check gcc "compile C programs"
+check g++ "compile C++ programs"
+check xsltproc "translate the Cena config file to Lowsars style"
+
+shfiles=(lowsars lowsars-cena lowsars-test)
+libfiles=(errorcodes-fp escape.sh cena.xsl)
+docfiles=(COPYING example)
+docdir="\$(DESTDIR)$prefix/share/doc/lowsars"
+localepath1="\$(DESTDIR)$prefix/share/locale"
+localepath2=LC_MESSAGES
+locales=(zh_CN)
+bindir="\$(DESTDIR)$prefix/bin"
+libdir="\$(DESTDIR)$prefix/share/lowsars"
+
+dir=`dirname -- "$0"`
+{
+echo "# Don't edit this file. Edit Makefile.in instead!"
+echo -n "shfiles="
+for f in "${shfiles[@]}"; do
+   echo -n " ../$f"
+done
+echo
+echo "localepath1=$localepath1"
+echo "localepath2=$localepath2"
+echo "locales=${locales[*]}"
+cat "$dir/po/Makefile.in"
+} > "$dir/po/Makefile"
+
+{
+echo "# Don't edit this file. Edit Makefile.in instead!"
+echo "libdir=$libdir"
+echo "libfiles=${libfiles[*]}"
+cat "$dir/lib/Makefile.in"
+} > "$dir/lib/Makefile"
+
+{
+echo "# Don't edit this file. Edit Makefile.in instead!"
+[ -x /bin/bash_by_lowsars ]||{
+    echo "bash2use=`which bash`"
+}
+echo "shfiles=${shfiles[*]}"
+echo "bindir=$bindir"
+echo "docfiles=${docfiles[*]}"
+echo "docdir=$docdir"
+cat "$dir/Makefile.in"
+} > "$dir/Makefile"
+
+echo "Done. run make now."
+

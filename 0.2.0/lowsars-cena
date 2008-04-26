@@ -1,0 +1,31 @@
+#!/bin/bash
+# Translate Cena config file to Lowsars config file
+[ "$LOWSARS_LIBDIR" = "" ]&&{
+[ "${0#*/}" = "$0" ]&&LOWSARS_LIBDIR="`which -- "$0"`"
+  #this occurs if this script is called in some special way, for example using valgrind
+LOWSARS_LIBDIR="`dirname -- "${LOWSARS_LIBDIR:-$0}"`/"
+[ "${0:0:1}" = "/" ]||LOWSARS_LIBDIR="$PWD/$LOWSARS_LIBDIR"
+LOWSARS_LIBDIR="${LOWSARS_LIBDIR//\/+(.\/)//}"
+while t="`basename -- "$LOWSARS_LIBDIR"`"; [ "$t" = ".." ]
+  do LOWSARS_LIBDIR="${LOWSARS_LIBDIR//\/!(..|*\/*)+(\/)..+(\/)//}"; done
+  #slow
+case "$t" in
+  bin|sbin)LOWSARS_LIBDIR="`dirname -- "$LOWSARS_LIBDIR"`/share/lowsars";;
+esac
+}
+LOWSARS_LIBDIR="$LOWSARS_LIBDIR/"
+LOWSARS_LIBDIR="${LOWSARS_LIBDIR//+(\/)//}"
+xslfile=$LOWSARS_LIBDIR/cena.xsl
+[ -f "$1" ]||{
+   echo "Please specify the dataconf.xml file as the parameter." >&2
+   exit 2
+}
+cenafile="$1"
+cd "`dirname "$cenafile"`"
+cenafile="`basename "$cenafile"`"
+gunzip -d "$cenafile" 2>/dev/null
+lowsarsfile=../dataconf.lsc
+xsltproc "$xslfile" "$cenafile" | {
+    read x
+    cat
+}| tr \\ / > $lowsarsfile
