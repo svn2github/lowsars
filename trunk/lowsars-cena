@@ -1,5 +1,6 @@
 #!/bin/bash
 # Translate Cena config file to Lowsars config file
+shopt -s extglob
 [ "$LOWSARS_LIBDIR" = "" ]&&{
 [ "${0#*/}" = "$0" ]&&LOWSARS_LIBDIR="`which -- "$0"`"
   #this occurs if this script is called in some special way, for example using valgrind

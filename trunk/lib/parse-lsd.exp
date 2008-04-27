@@ -1,13 +1,15 @@
 #!/bin/expect
 log_user 0
 remove_nulls 0
+set timeout -1
+match_max 65536
 
 
 proc p_singlequote {{ret li_ret}} {
   upvar $ret li_ret
   expect {
     -re -indices {([~']*)'} {append li_ret $expect_out(1,string)}
-    eof {error "unexpected eof"}
+    eof {error "parse-lsd: unexpected eof"}
   }
 }
 
@@ -22,7 +24,7 @@ proc p_doublequote {{ret li_ret}} {
     -re -indices {([~\["]*)"} {append li_ret $expect_out(1,string)}
     -re -indices {([~\["]*)[[]} {append li_ret $expect_out(1,string); p_substitute; exp_continue}
     -re -indices {([~\["]*)[\](.)} {append li_ret $expect_out(1,string)$expect_out(2,string); exp_continue}
-    eof {error "unexpected eof"}
+    eof {error "parse-lsd: unexpected eof"}
   }
 }
 
@@ -92,7 +94,7 @@ set lsd_quotes {
 	 \([]*)[[]} {append li_ret $expect_out(1,string); p_substitute;exp_continue}
   -re -indices {([~'"
 	 \([]*)[(]} {append li_ret $expect_out(1,string)
-    if {$li_ret == ""} {p_array;exp_continue} {error "unexpected ("}
+    if {$li_ret == ""} {p_array;exp_continue} {error "parse-lsd: unexpected ("}
   }
   -re -indices {([~'"
 	 \([]*)[\](.)} {append li_ret $expect_out(1,string)$expect_out(2,string);exp_continue }

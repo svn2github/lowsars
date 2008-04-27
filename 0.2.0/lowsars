@@ -3,7 +3,26 @@
 # Usage: lowsars [OPTIONS] CONFIGFILE (See below)
 # credit: oldherl@gmail.com
 LOWSARS_BINDIR=`dirname "$0"`
-TEXTDOMAINDIR=/usr/share/locale
+
+shopt -s extglob
+[ "$LOWSARS_LOCALEDIR" = "" ]&&{
+[ "${0#*/}" = "$0" ]&&LOWSARS_LOCALEDIR="`which -- "$0"`"
+  #this occurs if this script is called in some special way, for example using valgrind
+LOWSARS_LOCALEDIR="`dirname -- "${LOWSARS_LOCALEDIR:-$0}"`/"
+[ "${0:0:1}" = "/" ]||LOWSARS_LOCALEDIR="$PWD/$LOWSARS_LOCALEDIR"
+LOWSARS_LOCALEDIR="${LOWSARS_LOCALEDIR//\/+(.\/)//}"
+while t="`basename -- "$LOWSARS_LOCALEDIR"`"; [ "$t" = ".." ]
+  do LOWSARS_LOCALEDIR="${LOWSARS_LOCALEDIR//\/!(..|*\/*)+(\/)..+(\/)//}"; done
+  #slow
+case "$t" in
+  bin|sbin)LOWSARS_LOCALEDIR="`dirname -- "$LOWSARS_LOCALEDIR"`/share/locale";;
+esac
+}
+LOWSARS_LOCALEDIR="$LOWSARS_LOCALEDIR/"
+LOWSARS_LOCALEDIR="${LOWSARS_LOCALEDIR//+(\/)//}"
+shopt -u extglob
+
+TEXTDOMAINDIR="$LOWSARS_LOCALEDIR"
 TEXTDOMAIN=lowsars
 export TEXTDOMAIN
 export TEXTDOMAINDIR

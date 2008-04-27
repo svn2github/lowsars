@@ -216,7 +216,7 @@ echo "${bigcache[*]}"
 *     --pipe                     the next file should be created as a pipe,
                                    usually used with --background-input
       --priority=number          increse nice with the number
-      --process=number           the process limit, should be used together
+*     --process=number           the process limit, should be used together
                                    with -u, or it will be something unwanted
 * -Q, --quick-test               set --show-stdout --show-stderr --show-output
   -r, --redirect-input           specify if the next file redirected to stdin,
