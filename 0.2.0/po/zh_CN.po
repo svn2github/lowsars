@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lowsars\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-26 17:48+0800\n"
+"POT-Creation-Date: 2008-04-27 22:51+0800\n"
 "PO-Revision-Date: 2008-04-17 21:08+0800\n"
 "Last-Translator: Liu Sizhuang <chinatslsz@hotmail.com>\n"
 "Language-Team: Simplified Chinese <zh@li.org>\n"
@@ -15,79 +15,79 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../lowsars:86 ../lowsars:68
+#: ../lowsars:86 ../lowsars:68 ../lowsars:87
 msgid "Accepted"
 msgstr "正确"
 
-#: ../lowsars:87 ../lowsars:69
+#: ../lowsars:87 ../lowsars:69 ../lowsars:88
 msgid "Wrong Answer"
 msgstr "答案错误"
 
-#: ../lowsars:88 ../lowsars:70
+#: ../lowsars:88 ../lowsars:70 ../lowsars:89
 msgid "Compile Error"
 msgstr "编译错误"
 
-#: ../lowsars:89 ../lowsars:71
+#: ../lowsars:89 ../lowsars:71 ../lowsars:90
 msgid "Source Not Found"
 msgstr "未找到源文件"
 
-#: ../lowsars:90 ../lowsars:72
+#: ../lowsars:90 ../lowsars:72 ../lowsars:91
 msgid "Time Limit Exceeded"
 msgstr "超出时间限制"
 
-#: ../lowsars:91 ../lowsars:73
+#: ../lowsars:91 ../lowsars:73 ../lowsars:92
 msgid "Memory Limit Exceeded"
 msgstr "超出内存限制"
 
-#: ../lowsars:92 ../lowsars:74
+#: ../lowsars:92 ../lowsars:74 ../lowsars:93
 msgid "Output Limit Exceeded"
 msgstr "超出输出限制"
 
-#: ../lowsars:93 ../lowsars:75
+#: ../lowsars:93 ../lowsars:75 ../lowsars:94
 msgid "Extra Point"
 msgstr "额外分数"
 
-#: ../lowsars:94 ../lowsars:76
+#: ../lowsars:94 ../lowsars:76 ../lowsars:95
 msgid "Bonus!"
 msgstr "额外奖励！"
 
-#: ../lowsars:95 ../lowsars:77
+#: ../lowsars:95 ../lowsars:77 ../lowsars:96
 msgid "Compiled Successfully"
 msgstr "编译成功"
 
-#: ../lowsars:96 ../lowsars:78
+#: ../lowsars:96 ../lowsars:78 ../lowsars:97
 msgid "Running Successfully"
 msgstr "运行成功"
 
-#: ../lowsars:97 ../lowsars:79
+#: ../lowsars:97 ../lowsars:79 ../lowsars:98
 msgid "Partial Point"
 msgstr "部分分数"
 
-#: ../lowsars:98 ../lowsars:80
+#: ../lowsars:98 ../lowsars:80 ../lowsars:99
 msgid "Presentation Error"
 msgstr "表达错误"
 
-#: ../lowsars:99 ../lowsars:81
+#: ../lowsars:99 ../lowsars:81 ../lowsars:100
 msgid "Excutable Not Found"
 msgstr "可执行文件未找到"
 
-#: ../lowsars:100 ../lowsars:82
+#: ../lowsars:100 ../lowsars:82 ../lowsars:101
 msgid "No permission"
 msgstr "没有权限"
 
-#: ../lowsars:101 ../lowsars:83
+#: ../lowsars:101 ../lowsars:83 ../lowsars:102
 msgid "Unknown run error"
 msgstr "未知运行错误"
 
-#: ../lowsars:106 ../lowsars:88
+#: ../lowsars:106 ../lowsars:88 ../lowsars:107
 msgid "Runtime Error %1"
 msgstr "运行错误 %1"
 
-#: ../lowsars:131 ../lowsars:113
+#: ../lowsars:131 ../lowsars:113 ../lowsars:132
 msgid "Name"
 msgstr "选手名"
 
-#: ../lowsars:135 ../lowsars:117
+#: ../lowsars:135 ../lowsars:117 ../lowsars:136
 msgid "Total"
 msgstr "总分"
 
