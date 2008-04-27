@@ -1,0 +1,165 @@
+#!/bin/expect
+log_user 0
+remove_nulls 0
+
+
+proc p_singlequote {{ret li_ret}} {
+  upvar $ret li_ret
+  expect {
+    -re -indices {([~']*)'} {append li_ret $expect_out(1,string)}
+    eof {error "unexpected eof"}
+  }
+}
+
+proc p_substitute {{ret li_ret}} {
+  upvar $ret li_ret
+  #Stub
+}
+
+proc p_doublequote {{ret li_ret}} {
+  upvar $ret li_ret
+  expect {
+    -re -indices {([~\["]*)"} {append li_ret $expect_out(1,string)}
+    -re -indices {([~\["]*)[[]} {append li_ret $expect_out(1,string); p_substitute; exp_continue}
+    -re -indices {([~\["]*)[\](.)} {append li_ret $expect_out(1,string)$expect_out(2,string); exp_continue}
+    eof {error "unexpected eof"}
+  }
+}
+
+#li_type: Array String Parameter Break, S by default
+#array: type, value, type, value...
+#parameter: name, type, value
+
+proc li_tostring_simple {t s {ret li_ret}} {
+  upvar $ret li_ret
+  switch -- $t {
+    S {append li_ret $s}
+    B {append li_ret --}
+    P {append li_ret --[lindex $s 0]=; li_tostring_simple [lindex $s 1] [lindex $s 2]}
+    A {
+      append li_ret "("
+      if {$s != ""} {
+        li_tostring_simple [lindex $s 0] [lindex $s 1]
+        foreach {st ss} [lrange $s 2 end] {append li_ret " "; li_tostring_simple $st $ss}
+      }
+      append li_ret ")"
+    }
+  }
+}
+
+proc li_tostring_reproduct {t s {ret li_ret}} {
+  upvar $ret li_ret
+  switch -- $t {
+    S {append li_ret \'[string map {\' \'\\\'\'} $s]\'}
+    B {append li_ret --}
+    P {append li_ret --\'[string map {\' \'\\\'\'} [lindex $s 0]]\'=; li_tostring_reproduct [lindex $s 1] [lindex $s 2]}
+    A {
+      append li_ret "("
+      if {$s != ""} {
+        li_tostring_reproduct [lindex $s 0] [lindex $s 1]
+        foreach {st ss} [lrange $s 2 end] {append li_ret " "; li_tostring_reproduct $st $ss}
+      }
+      append li_ret ")"
+    }
+  }
+}
+
+proc li_tostring_scoped {t s {n ""} {ret li_ret}} {
+  upvar $ret li_ret
+  if {$n != ""} {set n " '[string map {\' \'\\\'\'} $s]'"}
+  switch -- $t {
+    S {append li_ret "echo$n -- '[string map {\' \'\\\'\'} $s]'"}
+    B {append li_ret {rem$n}}
+    P {append li_ret {li_tostring_scoped [lindex $s 1] [lindex $s 2] [lindex $s 0]}
+    A {
+      append li_ret "cat$n {"
+      if {$s != ""} {
+        li_tostring_scoped [lindex $s 0] [lindex $s 1]
+        foreach {st ss} [lrange $s 2 end] {append li_ret {;
+}; li_tostring_scoped $st $ss}
+      }
+      append li_ret "}"
+    }
+  }
+}
+
+set lsd_quotes {
+  -re -indices {([~'"
+	 \([]*)'} {append li_ret $expect_out(1,string); p_singlequote;exp_continue}
+  -re -indices {([~'"
+	 \([]*)"} {append li_ret $expect_out(1,string); p_doublequote;exp_continue}
+  -re -indices {([~'"
+	 \([]*)[[]} {append li_ret $expect_out(1,string); p_substitute;exp_continue}
+  -re -indices {([~'"
+	 \([]*)[(]} {append li_ret $expect_out(1,string)
+    if {$li_ret == ""} {p_array;exp_continue} {error "unexpected ("}
+  }
+  -re -indices {([~'"
+	 \([]*)[\](.)} {append li_ret $expect_out(1,string)$expect_out(2,string);exp_continue }
+}
+
+set lsd_list {
+  -re -indices {([~'":
+	 \([]*):} {append li_ret $expect_out(1,string); lappend li_list_ret $li_type $li_ret; set li_ret {}; set li_type S; exp_continue}
+  -re -indices {([~'"
+	 \([]*)[
+	 ]+} {
+    append li_ret $expect_out(1,string)
+    if {$li_list_ret == ""} {if {$li_ret == ""} exp_continue} {lappend li_list_ret $li_type $li_ret; set li_ret $li_list_ret; set li_type A}
+  }
+}$lsd_quotes
+
+set lsd_classname {
+  -re -indices {([~'"
+	 \([]*)[$]} {
+    if {$li_list_ret == "" && $li_ret == "" && $expect_out(1,string) == ""} {set nonexcute 1} {append li_ret $expect_out(0,string)}
+    expect $lsd_list
+  }
+}$lsd_list
+
+proc p_body {{ret li_ret}} {
+  upvar $ret li_ret
+  set li_list2_ret {}
+  set br 0
+  upvar brs brs
+  while {br==0} {
+    expect {
+      "{" {li_initscope $li_ret; set br 1}
+      ";" {li_excute $li_ret; set br 1}
+      "}" {li_endscope; set br 1;set brs 1}
+      "]" {li_endsubstitute; set br 1;set brs 1}
+      ")" {set br 1}
+    }$lsd_list{
+    }
+    lappend li_list2_ret $li_type $li_ret
+    set li_ret {}
+    set li_type S
+  }
+}
+
+
+set lsd_array {
+  
+}
+
+
+set lsd_statement {
+  {$} {set nonexcute 1}
+  -- {}
+}
+
+
+
+
+
+
+
+
+
+set lsd_scope {
+  "{" scopebegin
+  "}" scopeend
+  ";" empty
+}
+
+
