@@ -27,7 +27,7 @@ TEXTDOMAIN=lowsars
 export TEXTDOMAIN
 export TEXTDOMAINDIR
 show_version(){
- echo "LowSars 0.2.0";
+ echo "Lowsars 0.2.0";
 }
 #显示用法帮助
 show_usage(){
