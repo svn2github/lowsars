@@ -1,14 +1,14 @@
 #!/bin/bash_by_lowsars
-# LowSars (pre-azalea) - Lightweight OI Wonderful Scoring And Ranking System
-# Usage: ./lowsars [OPTIONS] CONFIGFILE (See below)
-# credit: chinatslsz@hotmail.com
+# Lowsars - Lightweight OI Wonderful Scoring And Ranking System
+# Usage: lowsars [OPTIONS] CONFIGFILE (See below)
+# credit: oldherl@gmail.com
 LOWSARS_BINDIR=`dirname "$0"`
 TEXTDOMAINDIR=/usr/share/locale
 TEXTDOMAIN=lowsars
 export TEXTDOMAIN
 export TEXTDOMAINDIR
 show_version(){
- echo "LowSars 0.2-svn-20080421";
+ echo "LowSars 0.2.0";
 }
 #显示用法帮助
 show_usage(){
@@ -186,9 +186,8 @@ while if ! getopts :aqcpndDvVCrP-: param
     -q|--quiet) out=/dev/null;;
     -c|--contestants) isctls=1 isctls_=1;;
     -p|--problems) isprobls=1 isprobls_=1;;
-    -D|--add) isforce=0;;
     -n|--no-compile) tocompile=0;;
-    -d|--generate-data) isdata=1;;
+#    -d|--generate-data) isdata=1;;
     -v|--verbose) verbose=/dev/stderr;;
     -V|--test-verbose) verbose=/dev/stderr;vverbose=1;;
     -r|--remove) isremove=1;;
@@ -218,9 +217,9 @@ if [ ! -e "$cfgfn" ]; then
    exit 1
 fi
 {
-echo -n "LowSars -" >&4
+echo -n "LowSars - " >&4
 echo `gettext "Lightweight OI Wonderful Scoring And Ranking System"` >&4
-echo "Copyright 2007-2008 Lsz (chinatslsz@hotmail.com)" >&4
+echo "Copyright 2007-2008 Lsz (oldherl@gmail.com)" >&4
 null=/dev/null
 echo Ct. list $ctls >&3
 echo Prob. list $probls >&3
