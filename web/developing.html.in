@@ -1,0 +1,10 @@
+ <div id=content>
+<h2>Accessing SVN &nbsp;访问 SVN</h2>
+<ul><li>Lowsars uses the Subversion (SVN) as the version controlling tool. You can follow the latest developing by Accessing SVN. Lowsars使用Subversion (SVN)作为版本控制工具。你可以通过访问SVN来跟踪最新的开发进程。</li>
+<li style="color:maroon">Note: SVN version may be not stable, sometimes even doesn't work! 注意：SVN版本可能不稳定，有时甚至无法工作！</li>
+<li>With SVN installed, enter a clean directory and type the command below: 确保你安装了svn，进入一个干净的目录，在终端中输入以下命令：</li>
+<pre>svn co https://lowsars.svn.sourceforge.net/svnroot/lowsars/trunk lowsars</pre>
+<li>Note: This is one command and it only contains one line.注意：这是一条命令并且只包括一行。 </li>
+<li>Then, you can install it just as I described <a href="help.html">here</a>. 然后，你可以按照我<a href="help.html">这里</a>描述的方法来安装。</li>
+<li>Want to participate in developing? Please contact us.  想要参加开发吗？请联系我们。</li>
+</div>

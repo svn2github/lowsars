@@ -1,0 +1,21 @@
+ - Lowsars</title>
+<link href="mycss.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+ <div id=header>Lowsars</div>
+ <p id=subtitle>Lightweight OI Wonderful Scoring and Ranking System - 轻量级OI奇妙的评测系统</p>
+ <div id=navbar>
+  <li><a href="index.html">Home 主页</a></li>
+  <li><a href="faq.html">FAQ 问答</a></li>
+  <li><a href="download.html">Download 下载</a></li>
+  <li><a href="screenshot.html">Screenshot 截图</a></li>
+  <li><a href="help.html">Help 帮助</a></li>
+  <li><a href="developing.html">Developing 开发</a></li>
+  <li><a href="about.html">About 关于</a></li>
+<div id="sflogo">
+  <a href="http://sourceforge.net">
+  <img src="http://sflogo.sourceforge.net/sflogo.php?group_id=206504&amp;type=2"  border="0" alt="SourceForge.net Logo" />
+  </a>
+ </div>
+</div>
+ <!--width="125" height="37"-->

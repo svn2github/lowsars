@@ -1,0 +1,16 @@
+ <div id=content>
+<p>Hello. This is the main page of Lowsars sourceforge site.<br />
+大家好，这里是Lowsars sourceforge 站主页。
+</p>
+<p style="color:red">This site is still under construction! 本站仍在建设中！</p>
+<h2>What is Lowsars? 什么是Lowsars?</h2>
+<p>Lowsars is short for "Lightweight OI Wonderful Scoring and Ranking System". It is a free (GPL) software used for testing Olympiad in Informatics(OI) programs, and give the scores and rankings.</p>
+<p>Lowsars is written in bash and xslt, and mainly works on GNU/Linux.</p>
+<p>Lowsars是“轻量级OI奇妙的评测系统”的简称。它是用来测试信息学奥林匹克竞赛(OI)程序，并能够给出成绩和排名的GPL自由软件。</p>
+<p>Lowsars 由 bash 和 xslt 写成，主要在GNU/Linux系统上运行。</p>
+<h2>News 新闻</h2>
+<ul>
+<li>[2008-04-26] Lowsars 0.2.0 has been tagged, all code are frozen. It won't be long before publish. The only remaining work is to write the <a href="about.html">Help</a> page. Lowsars 0.2.0 已经标记。所有代码均已固定。距离发布不远了。唯一剩下的工作是书写<a href="about.html">帮助页面</a>。</li>
+<li>[2008-04-22] Lowsars 0.2.0 will be out before May 1, 2008. Keep your attention here! Lowsars 0.2.0 将会在2008年5月1日之前与大家见面，请继续关注！</li>
+</ul>
+ </div>

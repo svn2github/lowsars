@@ -1,0 +1,18 @@
+ <div id=content>
+<h2>Lowsars</h2>
+<h3>0.2.0</h3>
+<ul><li>Source code, RPM package, Source RPM and DEB package for GNU/Linux: GNU/Linux使用的源代码，RPM包，RPM源码包，DEB包：
+<ul>There is also some RPMs with bash. Use them <strong>only if</strong> the standard(no bash) version doesn't work. 这里也有带有bash的RPM包。除非标准(无bash)版本无法运行，否则<strong>不要</strong>使用。</ul>
+<ul><li><a href="http://sourceforge.net/project/showfiles.php?group_id=206504&package_id=247040&release_id=595206">Download from Sourceforge 从Sourceforge上下载</a></li></ul>
+</li></ul>
+<h3>0.1.2</h3>
+<ul><shax style="color:red">Not recommended. 不推荐使用</shax>
+<li>Source code for GNU/Linux: GNU/Linux使用的源代码：
+<ul><li>
+<a href="https://sourceforge.net/project/showfiles.php?group_id=206504&package_id=247040&release_id=542754">Download from Sourceforge 从Sourceforge上下载</a></li></ul>
+</li></ul>
+<h2>Bash</h2>
+<p>If you experience errors when using Lowsars, please try to install the official bash from GNU. 如果你使用Lowsars的时候碰到了错误，请尝试安装GNU官方的bash。</p>
+<ul><a href="http://www.gnu.org/software/bash">Link to GNU bash</a></ul>
+</div>
+
