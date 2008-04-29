@@ -1,0 +1,15 @@
+Package: lowsars
+Priority: optional
+Section: devel
+Installed-Size: 280
+Maintainer: Yu Hang <cosechy@gmail.com>
+Architecture: all
+Version: 0.2.0beta
+Depends: bash (>= 3.0), coreutils, bc, gettext
+Recommends: fp-compiler, gcc, g++, xsltproc
+Description: Lightweight OI Wonderful Scoring and Ranking System
+ Lowsars is a free (GPL) software for testing Olympiad in Informatics(OI) or other programs, and generating the scores and ranking.
+ .
+ Lowsars is written in bash and xslt, and mainly works on GNU/Linux.
+Homepage: http://lowsars.sourceforge.net/
+
