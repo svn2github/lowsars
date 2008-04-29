@@ -926,6 +926,17 @@ while if ! getopts :a:AbBc:C:defF:g:hHiI:j:J:k:Kl:L:m:MnN:o:O:pP:qrRsSt:Tu:vVw:W
     -c|--compile-limit);;
     -C|--compiler)getarg ${@:OPTIND:1}
       compiler="${arg%=*}";;
+    --compiler-*)getarg ${@:OPTIND:1}
+      for((i=0;i<${#compilername[@]};i++)); do
+        [ "${compilername}" = "*${param:11}" ]&&{
+          compilercmd="${arg%=*}"
+          break
+        }
+      done||{ ##compilername[@] is non-zero
+        compilercmd[${#compilername[@]}]="${arg%=*}"
+        compilerext[${#compilername[@]}]="${param:11}"
+        compilername[${#compilername[@]}]="*${param:11}"
+      };;
     --check-compile)compileonly=1;;
     --source-file)getarg ${@:OPTIND:1}
       sourcefile="${arg%=*}";;
