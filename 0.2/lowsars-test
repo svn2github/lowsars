@@ -1302,9 +1302,10 @@ elif echo "Program exited with no error, calling judge..." 1>&6
     if ((judgeexitcode=$?))
       then echo "Judge returned with exitcode $judgeexitcode: ${result:-"(nothing)"}" 1>&6
     else echo "Judge returned: ${result:-"(nothing)"}" 1>&6
+      echo "Fullscore: ${judgescore[j]}" 1>&6
       case "${judgemode[j]}" in
         1)read -r -d "" score result<<<"$result"; [ "${score:-0}" = "0" ];;
-        *)score="${judgescore[j]:=$((10*(j==0)))}"; ! :;;
+        *)score="${judgescore[j]:=$((fullscore*(j==0)))}"; ! :;;
       esac
     fi&&((--i>=0))
   do :; done
