@@ -29,4 +29,4 @@ lowsarsfile=../dataconf.lsc
 xsltproc "$xslfile" "$cenafile" | {
     read x
     cat
-}| tr \\ / > $lowsarsfile
+}| tr \\\\ / > $lowsarsfile
