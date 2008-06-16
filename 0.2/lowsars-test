@@ -153,6 +153,7 @@ echo "${bigcache[*]}"
                                    now c cpp pascal available
 *     --factor=number            multiply the (judge returned?)score by number
 *     --force-override           try to change permissions and remove old input
+      --force-compile            remove old excuteable before compiling
 * -g, --source=file|folder       specify a list where to get the source from
 * -G, --compare-standard=program -n and use standard program to generate answer
 *     --get-fortune=resulttype   do not judge, return a message just like --say
@@ -868,6 +869,7 @@ messagelib=(1 1 1)
 compiler="*off"
 compileonly=0
 sourcefile=
+forcecompile=0
 
 logincommand=()
 protecteduser=0
@@ -1007,6 +1009,7 @@ while if ! getopts :a:AbBc:C:defF:g:hHiI:j:J:k:Kl:L:m:MnN:o:O:pP:qrRsSt:Tu:vVw:W
       killcommand=(5);;
     --priority)getarg ${@:OPTIND:1}
       priority="${arg%=*}";;
+    --force-compile)forcecompile=1;;
     -\?)param=-$OPTARG; getresult 1;;
     -:)param=-$OPTARG; getresult 2;;
     --*)getresult 1;;
@@ -1155,6 +1158,7 @@ esac
 [ "$compiler" = "" ]||{
   [ -e "$sourcefile" ]||getresult -142
                              ESCAPE_VALUES[115]="$sourcefile" #%s
+  if [ -e "$testcommand" ]; then rm -rf "$testcommand"; fi
   unescape "$compiler"
   compiler="$escaperesult"
   if [ "${escaperesult#*/}" = "$escaperesult" ]
