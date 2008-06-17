@@ -524,8 +524,8 @@ for ct in $ctls; do
          rm -r $exefntesting 2>&3 >&3
          a="`gettext "Compiling %1 ..."`"
          echo -n "${a//%1/$ct.$prob}" | tee -a "$friendly" #use lowsars-test to compile
-         a=`$LOWSARS_BINDIR/lowsars-test $exefntesting -C* -t0 --real-time`
-         echo "$LOWSARS_BINDIR/lowsars-test $exefntesting -C* -t0 --real-time" >&3
+         a=`$LOWSARS_BINDIR/lowsars-test $exefntesting -C\* --check-compile`
+         echo "$LOWSARS_BINDIR/lowsars-test $exefntesting -C\* --check-compile" >&3
          read x1 x2 x3 <<< "$a"
          echo "$x1 $x2 $x3" >&3
          if [ -f "$exefntesting" ]; then
