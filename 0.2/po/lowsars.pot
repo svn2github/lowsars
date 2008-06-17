@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-05-09 21:29+0800\n"
+"POT-Creation-Date: 2008-06-17 16:04+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -124,38 +124,39 @@ msgstr ""
 msgid "Not to test %1"
 msgstr ""
 
-#: ../lowsars:521 ../lowsars:503
+#: ../lowsars:521 ../lowsars:503 ../lowsars:525
 msgid "Compiling %1 ..."
 msgstr ""
 
-#: ../lowsars:528 ../lowsars:510
+#: ../lowsars:528 ../lowsars:510 ../lowsars:532
 msgid "Success"
 msgstr ""
 
-#: ../lowsars:536 ../lowsars:518
+#: ../lowsars:536 ../lowsars:518 ../lowsars:544
 msgid "Not to compile."
 msgstr ""
 
-#: ../lowsars:548 ../lowsars:530
+#: ../lowsars:548 ../lowsars:530 ../lowsars:556
 msgid "Testing "
 msgstr ""
 
-#: ../lowsars:611 ../lowsars:593
+#: ../lowsars:611 ../lowsars:593 ../lowsars:619
 msgid "Unknown Tester Error"
 msgstr ""
 
-#: ../lowsars:629 ../lowsars:611
+#: ../lowsars:629 ../lowsars:611 ../lowsars:637
 msgid "s"
 msgstr ""
 
-#: ../lowsars:629 ../lowsars:611
+#: ../lowsars:629 ../lowsars:611 ../lowsars:637
 msgid "Score: "
 msgstr ""
 
-#: ../lowsars:637 ../lowsars:647 ../lowsars:619 ../lowsars:629
+#: ../lowsars:637 ../lowsars:647 ../lowsars:619 ../lowsars:629 ../lowsars:645
+#: ../lowsars:655
 msgid "Total score for %1 : %2"
 msgstr ""
 
-#: ../lowsars:653 ../lowsars:635
+#: ../lowsars:653 ../lowsars:635 ../lowsars:661
 msgid "Judging ended at: "
 msgstr ""

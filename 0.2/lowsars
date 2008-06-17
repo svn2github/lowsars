@@ -516,26 +516,34 @@ for ct in $ctls; do
       }
       [ $totest = 1 ]&&{
       rm "$uniform/$ct/$prob" 2>&3 >&3
+      rm -r testing/* 2>&3 >&3
       if [ $tocompile = 1 ]; then
-         rm $exefn >&3 2>&3
+         mkdir testing/compile 2>&3 >&3
+         cp $exefn* testing/compile 2>&3 >&3
+         exefntesting=testing/compile/$prob
+         rm -r $exefntesting 2>&3 >&3
          a="`gettext "Compiling %1 ..."`"
          echo -n "${a//%1/$ct.$prob}" | tee -a "$friendly" #use lowsars-test to compile
-         a=`$LOWSARS_BINDIR/lowsars-test $exefn -C* -t0 --real-time`
-         echo "$LOWSARS_BINDIR/lowsars-test $exefn -C* -t0 --real-time" >&3
+         a=`$LOWSARS_BINDIR/lowsars-test $exefntesting -C* -t0 --real-time`
+         echo "$LOWSARS_BINDIR/lowsars-test $exefntesting -C* -t0 --real-time" >&3
          read x1 x2 x3 <<< "$a"
          echo "$x1 $x2 $x3" >&3
-         if [ -f "$exefn" ]; then
+         if [ -f "$exefntesting" ]; then
              x3=`gettext "Success"`
+             cp $exefntesting testing/x$prob 2>&3 >&3
+             #this is useful when the problem is called `compile', although it looks ugly
+             rm -r testing/compile >&3 2>&3
+             mv testing/x$prob testing/$prob >&3 2>&3
          else
              echo "Total 0" > "$uniform/$ct/$prob"
              totest=2
+             rm -r testing/compile 2>&3 >&3
          fi
          echo "`getstatusi18n "$x3"`" | tee -a "$friendly"
-         rm $exefn.o >&3 2>&3
       else
          echo "`gettext "Not to compile."`" | tee -a "$friendly"
+         cp $exefn testing/ >&3 2>&3
       fi
-      mv $exefn testing/ >&3 2>&3
       }
       [ $totest = 1 ]&&{
       for ((csgpid=1;csgpid<=csgroups[probid];csgpid++)); do
