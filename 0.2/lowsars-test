@@ -1158,7 +1158,7 @@ esac
 [ "$compiler" = "" ]||{
   [ -e "$sourcefile" ]||getresult -142
                              ESCAPE_VALUES[115]="$sourcefile" #%s
-  if [ -e "$testcommand" ]; then rm -rf "$testcommand"; fi
+  #if [ -e "$testcommand" ]; then rm -rf "$testcommand"; fi
   unescape "$compiler"
   compiler="$escaperesult"
   if [ "${escaperesult#*/}" = "$escaperesult" ]
