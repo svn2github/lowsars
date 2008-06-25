@@ -1,63 +1,100 @@
  <div id=content>
+<p style="color:red">This page is still under construction! 本页仍在建设中！</p>
+<h2>0. Index 目录</h2>
+<div id="index">
+    <a href="#one-H"><p>1 Installing. 安装</p></a>
+    <a href="#two-He"><p>2 Arranging the directories and files. 整理目录和文件</p></a>
+    <a href="#three-Li"><p>3 Create the contest file 建立比赛文件</p></a>
+    <ul>
+      <a href="#three-one-Be"><p>3.1 Simple Example 简单的例子</p></a>
+      <a href="#three-two-B"><p>3.2 Limits and Multiple Case Groups 限制和多个测试点组</p></a>
+      <a href="#three-three-C"><p>3.3 Multiple Problems 多个题目</p></a>
+      <a href="#three-four-N"><p>3.4 Whitespaces and Special Judge 空白字符和Special Judge</p></a>
+      <a href="#three-five-O"><p>3.5 Import contest file from Cena 从Cena导入比赛文件</p></a>
+    </ul>
+    <a href="#four-Na"><p>4 Run the lowsars command 运行lowsars命令</p></a>
+    <a href="#five-K"><p>5 See the result 查看结果</p></a>
+    <a href="#six-Rb"><p>6 Others 其他</p></a>
+</div>
 <p>On this page, you will get to know how to use Lowsars. 在本页上，你将学会如何使用Lowsars。</p>
+<a name="one-H"></a>
 <h2>1. Installing. 安装</h2>
+<h3>deb/rpm packages:  deb/rpm包：</h3>
+<ul><li>Just use your package manager to install it. 只需使用你的软件包管理器来安装。</li></ul>
+<h3>源代码 Source .tar.gz: </h3>
 <ul>
-<li>After download the package, unpack it and enter the directory: 下载以后，解压并进入该目录：</li>
-<pre>tar -xvf lowsars-0.2.0.tar.gz && cd lowsars</pre>
+<li>After download the package, unpack it and change into the directory: 下载以后，解压并进入该目录：</li>
+<pre>tar -xvf lowsars-0.2.0.tar.gz &amp;&amp; cd lowsars</pre>
 <li>Run <mo>configure</mo> script: 运行<mo>configure</mo>脚本：</li>
 <pre>./configure</pre>
-<li>If any "Something not found. Please install it." appeared, you should install that first, and then run the script again. 如果出现了“某某 not found. Please install it.”，你就应该先安装它，然后再次运行该脚本。</li>
+<li>If any "Something not found. Please install it." message appeared, you should install that first, and then run the script again. 如果出现了“某某 not found. Please install it.”，你就应该先安装它，然后再次运行该脚本。</li>
 <li>Run <mo>make</mo>: 运行<mo>make</mo>：</li>
 <pre>make</pre>
 <li>Run <mo>make install</mo> with root permission: 在root权限下运行<mo>make install</mo>：</li>
 <pre>sudo make install</pre>
 </ul>
-<h2>2. Arranging the directories and files. 整理目录和文件</h2>
+<a name="two-He"></a>
+<h2>2. Arranging the files for testing. 整理测试用的文件</h2>
 <ul>
-<li>The contest (data, source, config file) should be stored in a directory. From now on, it will be called the Contest Diretrory (<mo>ConD</mo>). 比赛(测试数据，源代码，配置文件)应该存储在一个目录中。从现在开始，它将会叫做“比赛目录”(<mo>ConD</mo>)。</li>
+<li>The contest (data, source, config file) should be stored in a directory. From now on, it will be called the Contest Diretrory (<mo>ConD</mo>). 比赛(测试数据，源代码，配置文件)应该存储在一个目录中。从现在开始，我们将会把它叫做“比赛目录”(<mo>ConD</mo>)。</li>
 <li>There should be two subdirectories in <mo>ConD</mo>: <mo>data</mo> and <mo>src</mo> . 比赛目录下面应该有两个子目录：<mo>data</mo>和<mo>src</mo>。</li>
 <li>All data files should be put in <mo>ConD/data</mo>. 所有测试数据都应放在<mo>ConD/data</mo> 下。</li>
 <li>All contestants' source files should be put in <mo>ConD/src/contestant_name/</mo>, where the contestant_name is the contestant's name. For example, lsz's source files should be in <mo>ConD/src/lsz/</mo>. 所有选手的源代码都应该放在<mo>ConD/src/选手名称/</mo>下，比如，lsz的源代码应该放在<mo>ConD/src/lsz/</mo>下。</li>
-<li>All basenames of source file names should be the same as the problem(task) name. The extension name of it should be .pas, .c, or .cpp, according to the language he/she uses. For example, lsz's Pascal source file for the problem <mo>simple</mo> should be named simple.pas</mo>, and places in <mo>ConD/src/lsz/simple.pas</mo> 所有的源代码的主文件名必须和题目名称一致，扩展名必须是.pas，.c或.cpp(根据他/她所用的语言而定)。比如，选手lsz的<mo>simple</mo>一题的 Pascal源代码的文件名应该是<mo>simple.pas</mo>，并放在<mo>ConD/src/lsz/simple.pas</mo>。</li>
-<li>All programs must only input/output to/from files.所有程序都必须从文件输入/输出。</li>
-<li>Lowsars now only support classical problems.(support Special Judge , not support Submitting Output Files and Interactive). Lowsars 现在只支持传统题目。(支持 Special Judge，不支持提交文件和交互式题目)</li>
+<li>All basenames of source file names should be the same as the problem(task) name. The extension name of it should be .pas, .c, or .cpp, according to the language he/she is using. For example, lsz's Pascal source file for the problem <mo>simple</mo> should be named simple.pas</mo>, and placed in <mo>ConD/src/lsz/simple.pas</mo> 所有的源代码的主文件名必须和题目名称一致，扩展名必须是.pas，.c或.cpp(根据他/她所用的语言而定)。比如，选手lsz的<mo>simple</mo>一题的Pascal源代码的文件名应该是<mo>simple.pas</mo>，并放在<mo>ConD/src/lsz/simple.pas</mo>。</li>
+<li>All programs must read/write only from/to files. 所有程序都必须从文件输入/输出。</li>
+<li>Lowsars now only support classical problems.(with Special Judge support, but not Submitting Output Files nor Interactive) Lowsars 现在只支持传统题目。(支持 Special Judge，不支持提交文件和交互式题目)</li>
 </ul>
+<a name="three-Li"></a>
 <h2>3. Create the contest file 建立比赛文件</h2>
 <ul>
-<li>Lowsars read all the information about the contest from the contest file. It is a text file located in <mo>ConD/</mo> . Lowsars 从比赛文件中读入所有有关比赛的信息。比赛文件是在<mo>ConD/</mo>下的一个文本文件。</li>
+<li>Lowsars reads all the information about the contest from the contest file. It is a text file located in <mo>ConD/</mo> . Lowsars 从比赛文件中读入所有有关比赛的信息。比赛文件是在<mo>ConD/</mo>下的一个文本文件。</li>
 <li>You can name it whatever you like, but something like <mo>contest.lsc</mo> is recommended. .lsc means LowSars Contest file.  这个文件可以叫做任何名称，但是建议叫做类似<mo>contest.lsc</mo>的名称。.lsc的意思是LowSars Contest文件。</li>
 <li>You can write it in any text editor you like: vim, emacs, gedit, kate... 你可以使用任何你喜欢的文本编辑器来写比赛文件：vim, emacs, gedit, kate……</li>
-<li>Now, let's begin with a simple one: 现在，让我们从一个简单的例子开始：</li>
+<li>
+If you already had Cena contest file, you just need to convert it with <a href="three-five-O">lowsars-cena</mo>, instead of writing again.</li>
+<li>如果你有Cena比赛文件，你可以使用<a href="three-five-O">lowsars-cena</mo></a>把它转换成Lowsars比赛文件，而不用再次手写。</li></ul>
+<a name="three-one-Be"></a>
+<h3>3.1 Simple Example 简单的例子</h3>
+<ul>
+<li>Now, let's see a simple example: 现在，让我们从一个简单的例子开始：</li>
 <pre>problem first
    input @.in
    output @.out
    cases 1 10
       input @#.in
       output @#.out
-      timelimit 1
 end</pre>
-<li>Line 1 means that there is a problem named <mo>first</mo>.</li>
+<li>All spaces at the beginning of each line are not necessary, that is, it is equal to the one below:</li>
+<li>每行开头的所有空格都不是必需的，也就是说，它和下面的例子是一样的：</li>
+<pre>problem first
+input @.in
+output @.out
+cases 1 10
+input @#.in
+output @#.out
+end</pre>
+<li>Line 1 says that there is a problem named <mo>first</mo>.</li>
 <li>第1行表示有一个叫做<mo>first</mo>的题目。</li>
-<li>Line 2 means the input file (used by the contestants' programs) is named <mo>first.in</mo>. Yes, as you see, @ here means the problem's name, which is <mo>first</mo> here.</li>
+<li>Line 2 says the input file (given to the contestants' programs) is named <mo>first.in</mo>. As you see, @ here means the problem's name, which is <mo>first</mo> here.</li>
 <li>第2行表示(选手程序的)输入文件是<mo>first.in</mo>。没错，这里的@表示题目名称，这里是<mo>first</mo>。</li>
-<li>Of course, you can also write "<mo>input first.in</mo>" here, but it's longer than this, isn't it?</li>
+<li>Of course, you can also write "<mo>input first.in</mo>" here, but it will be longer than this, do you want it?</li>
 <li>当然，这里也可以写"<mo>input first.in</mo>"，但是那个更长，对吧？</li>
-<li>Line 3 is similar to Line 2, except that this one is the output.</li>
+<li>Line 3 is similar to Line 2, except for that it is the output.</li>
 <li>第3行和第2行差不多，只不过这里是输出文件。</li>
-<li>Line 4 means that there are 10 test cases: from number 1 to 10.</li>
+<li>Line 4 says that there are 10 test cases: from number 1 to 10.</li>
 <li>第4行表示有10个测试点，从1号到10号。</li>
-<li>Line 5 means the input file (in the data) is named <mo>first1.in, first2.in, ..., first10.in</mo>. Yes, the # means the case number, which is from 1 to 10. All these files are relative path from <mo>ConD/data/</mo>, which means, they are <mo>ConD/data/first1.in</mo> and so on.</li>
+<li>Line 5 says the input file (in the data) is named <mo>first1.in, first2.in, ..., first10.in</mo>. Yes, the # means the case number, which is from 1 to 10. All these files are relative paths from <mo>ConD/data/</mo>, in other words, they are <mo>ConD/data/first1.in</mo> and so on.</li>
 <li>第5行表示(数据里面的)输入文件是 <mo>first1.in, first2.in, ……, first10.in</mo>。这里的#表示测试点编号，这里是从1到10。所有这些文件都是相对于<mo>ConD/data/</mo>的路径，也就是说，这些文件实际上是<mo>ConD/data/first1.in</mo>等等。</li>
-<li>Line 6 is similar to Line 5, data output file.</li>
+<li>Line 6 is similar to Line 5, but for data output file.</li>
 <li>第6行与第5行相似，是数据的输出文件。</li>
-<li>Line 7 defines the time limit of those cases. Time limit is 1 second. If someone's program runs more than 1 second, it would be killed and he/she can't get any scores in this test case.</li>
-<li>第7行定义了这些测试点的时限。时限是1秒。如果某位选手的程序运行时间超过1秒，那么程序将被砍掉，他/她此测试点将不能得到任何分数。</li>
-<li>Line 8 means the configure file is over. Don't omit this line or Lowsars will do something you don't want. </li>
-<li>第8行表示配置文件结束了。不要省略这一行，否则Lowsars会做出一些你不愿看到的事。</li>
-<li>In the 4th part, you will know how to test this contest.</li>
-<li>在第4部分，你将知道如何测试这场比赛。</li>
-<li>But for now, let's see a more complicated contest file:</li>
-<li>但是现在，让我们来看一个更复杂的比赛文件：</li>
+<li>Line 7 means the contest file is over. Don't omit this line or Lowsars will do something unexpected. </li>
+<li>第7行表示比赛文件结束了。不要省略这一行，否则Lowsars会做出一些你不愿看到的事。</li>
+<li>In the 4th part, you will know how to test this contest. But for now, let's see a more complicated contest file:</li>
+<li>在第4部分，你将知道如何测试这场比赛。但是现在，让我们来看一个更复杂的比赛文件：</li>
+</ul>
+<a name="three-two-B"></a>
+<h3>3.2 Limits and Multiple Case Groups 限制和多个测试点组</h3>
+<ul>
 <pre>problem second
    cases 0 4
       input @a#.in
@@ -78,22 +115,115 @@ end</pre>
 <li>如果程序输入文件名是<mo>@.in</mo>，就像这道题一样，那么它可以省略。输出文件名是<mo>@.out</mo>的也一样。</li>
 <li>Line 3 means that the data input filenames is <mo>@a#.in</mo>, which means <mo>seconda0.in, seconda1.in, ..., seconda4.in</mo>.</li>
 <li>第3行表示数据输入文件名是<mo>@a.in</mo>，也就是<mo>seconda0.in, seconda1.in, ..., seconda4.in</mo>。</li>
-<li>Line 4 doesn't need explanation. :)</li>
-<li>第4行不需要解释。：）</li>
+<li>No explanation for line 4. :) 第4行不需要解释。</li>
 <li>Line 5 means there is another test case: case 7. Note it is "<mo>case</mo>" instead of "<mo>cases</mo>" since there is only one case here.</li>
 <li>第5行表示还有另一个测试点：测试点7。注意因为只有一个测试点，这里是“<mo>case</mo>”而不是“<mo>cases</mo>”。</li>
 <li>Line 6 means the data input filename for test case 7 is <mo>@b#.in</mo>, which only means <mo>secondb7.in</mo> here.</li>
 <li>第6行表示7号测试点的数据输入文件是<mo>@b#.in</mo>，在这里只表示<mo>secondb7.in</mo>。</li>
-<li>No words on line 7.</li>
-<li>第7行我也不说了。</li>
-<li>Line 8 defines the timelimit for test case 7. It means the timelimit is 2 seconds. If this line is omitted like the above testcases 0-4, the default value is 1 second. The word "<mo>timelimit</mo>" can be written as "<mo>time</mo>" or "<mo>tlimit</mo>" if you are as lazy as me.</li>
-<li>第8行定义了第7点的时间限制。它表示时间限制是2秒。如果这一行像上面的0-4测试点一样被省略的话，默认为1秒。如果你像我一样懒，“<mo>timelimit</mo>”可以简写为“<mo>time</mo>”或者“<mo>tlimit</mo>”。</li>
-<li>Line 8 defines the score for test case 7. It means you get 15 score each testcase if you have done right on it. If this line is omitted like the above testcases 0-4, the default value is 10.</li>
-<li>第8行定义了第7点的分数。它表示如果你这个点做对了，将得到15分。如果这一行像上面的0-4测试点一样被省略的话，默认为10分。</li>
-<li>No words on line 9-11.</li>
-<li>第9-11行我也不说了。</li>
-<li>Line 12 defines the memory limit for test case 7. It means the memory limit is 4096 KB. If this line is omitted like the above testcases 0-4, the default value is 262144 KB. The word "<mo>memorylimit</mo>" can be written as "<mo>memory</mo>" or "<mo>mlimit</mo>" if you are lazy.</li>
-<li>第12行定义了第7点的内存限制。它表示内存限制是4096KB。如果这一行像上面的0-4测试点一样被省略的话，默认为262144KB。如果你懒，“<mo>memorylimit</mo>”可以简写为“<mo>memory</mo>”或者“<mo>mlimit</mo>”。
+<li>No words on line 7. 第7行我也不说了。</li>
+<li>Line 8 defines the timelimit for test case 7. It means if someone's program runs more than the time limit (here 2 seconds), it would be killed and he/she can't get any scores in this test case. If this line is omitted like the above testcases 0-4, the default value as 1 second is used. The word "<mo>timelimit</mo>" can be shorten as "<mo>time</mo>" or "<mo>tlimit</mo>".</li>
+<li>第8行定义了第7点的时间限制。它表示如果某位选手的程序运行时间超过时间限制(这里是2秒)，那么程序将被砍掉，他/她此测试点将不能得到任何分数。如果这一行像上面的0-4测试点一样被省略的话，默认为1秒。“<mo>timelimit</mo>”可以简写为“<mo>time</mo>”或者“<mo>tlimit</mo>”。</li>
+<li>Line 9 defines the score for test case 7. It means you get 15 score each testcase if you have done right on it. If this line is omitted like the above testcases 0-4, the default value is 10.</li>
+<li>第9行定义了第7点的分数。它表示如果你这个点做对了，将得到15分。如果这一行像上面的0-4测试点一样被省略的话，默认为10分。</li>
+<li>No words on line 10-12.</li>
+<li>第10-12行我也不说了。</li>
+<li>Line 13 defines the memory limit for test case 7. It means the memory limit is 4096 KB. If this line is omitted like the above testcases 0-4, the default value is 262144 KB. The word "<mo>memorylimit</mo>" can be written as "<mo>memory</mo>" or "<mo>mlimit</mo>" if you are lazy.</li>
+<li>第13行定义了第7点的内存限制。它表示内存限制是4096KB。如果这一行像上面的0-4测试点一样被省略的话，默认为262144KB。如果你懒，“<mo>memorylimit</mo>”可以简写为“<mo>memory</mo>”或者“<mo>mlimit</mo>”。</li>
+</ul>
+<a name="three-three-C"></a>
+<h3>3.3 Multiple Problems 多个题目</h3>
+<ul>
+<li>Of course, you can have more than one problem in one contest file, just write like below:</li>
+<li>当然，一个比赛文件中可以含有多个题目，就像下面的例子：</li>
+<pre>problem third
+ cases 1 10
+   input @/@#.in
+   output @/@#.out
+problem fourth
+ cases 1 10
+   input @/@#.in
+   output @/@#.out
+end</pre>
+<li>This contest file contains two problems: <mo>third</mo> and <mo>fourth</mo>.</li>
+<li>这个比赛文件包括两个题目：<mo>third</mo>和<mo>fourth</mo>。</li>
+<li>Lines 1 to 4 describes the problem <mo>third</mo>, and Lines 5 to 9 describes the problem <mo>fourth</mo>.</li>
+<li>第1至4行描述了题目<mo>third</mo>，第5至9行描述了题目<mo>fourth</mo>。</li>
+<li>Note: only write one <mo>end</mo> in one contest file.</li>
+<li>注意：一个比赛文件中只写一个<mo>end</mo>。</li>
+<a name="three-four-N"></a>
+<h3>3.4 Whitespaces and Special Judge 空白字符和Special Judge</h3>
+<pre>problem fifth
+ judge ignore spaces
+ cases 1 5
+   input @/@#.in
+   output @/@#.out
+problem sixth
+ judge noscore testsix %a %o
+ cases 0 8
+   input @/@#.in
+   output @/@#.out
+problem seventh
+ judge score testseven %a %o
+ cases 1 6
+   input @/@#.in
+   output @/@#.out
+end</pre>
+<li>Line 2 uses the <mo>judge ignore</mo> feature in Lowsars. <mo>judge ignore space</mo> means to ignore extra spaces when comparing the contestants' output file with the standard ones. <mo>judge ignore white</mo> means to ignore all spaces. <mo>judge ignore emptyline</mo> means to ignore empty lines. <mo>judge ignore case</mo> means to be not case-sensitive.</li>
+<li>第2行使用了Lowsars中的<mo>judge ignore</mo>功能。<mo>judge ignore space</mo>表示在比较选手输出和标准输出时忽略额外的空格。<mo>judge ignore white</mo>表示忽略所有空格 <mo>judge ignore emptyline</mo>表示忽略所有空行。<mo>judge ignore case</mo>表示忽略大小写。</li>
+<li>By default, Lowsars will ignore the difference between CR-LF (the line-breaking in DOS/Windows) and LF (the line-breaking in Unix/Linux). If you want pure byte-by-byte comparing, use <mo>judge ignore nothing</mo>.</li>
+<li>在默认情况下，Lowsars忽略CR-LF(DOS/Windows换行符)和LF(Unix/Linux换行符)。如果你想要逐字节的比较，请使用<mo>judge ignore nothing</mo>。</li>
+<li>You can combine them together, like <mo>judge igonre space emptyline</mo>. It means to ignore both extra spaces and emptylines. </li>
+<li>你也可以把它们组合在一起，就像<mo>judge igonre space emptyline</mo>。这表示忽略多余空格和空行。</li>
+<li>Line 7 specifies the no-score special judge program for problem <mo>sixth</mo>: <mo>ConD/testsix %a %o</mo>. Here %a means the data output file(answer file), %o means the contestant output file, and %i means the input file. After running the contestants' programs, <mo>ConD/testsix %a %o</mo> will run. If that exits with code 0 (normal exit), he/she will get full score for that case, otherwise, he/she will get no score for it.</li>
+<li>第7行指定了题目<mo>sixth</mo>的非得分Special Judge程序：<mo>ConD/testsix %a %o</mo>。这里的%a表示数据输出文件(答案文件)，%o表示选手输出文件，%i表示输入文件。当选手程序运行完毕后，将会执行<mo>ConD/testsix %a %o</mo>，如果它退出代码是0(正常退出)，则他/她将会得到该测试点的全部分数，否则他/她将得不到该点的分数。</li>
+<li>Line 12 specifies the score special judge program for problem <mo>seventh</mo>: <mo>ConD/testseven %a %o</mo>. After running the contestants' programs, <mo>ConD/testseven %a %o</mo> will run. That program should output a line like <mo>SCORE INFO</mo>, where SCORE is the score for the testcase, and INFO is the information to display (optimal). </li>
+<li>第12行指定了题目<mo>seventh</mo>的含得分Special Judge程序：<mo>ConD/testseven %a %o</mo>。当选手程序运行完毕后，将会执行<mo>ConD/testseven %a %o</mo>，它应该输出一行类似<mo>SCORE INFO</mo>的内容，其中SCORE是该点得分，INFO是用于显示的额外信息(可选)。</li>
+</ul>
+<a name="three-five-O"></a>
+<h3>3.5 Import contest file from Cena 从Cena导入比赛文件</h3>
+<ul>
+<li>Cena is another free scoring and testing program similar to Lowsars, but it runs only on MS Windows. Cena是另一个自由的测评系统，它运行在MS Windows上。</li><!--TODO Cena's website here-->
+<li>You can import a Cena contest file to Lowsars contest file by the following command: 你可以用下面的命令把Cena格式的比赛文件转换成Lowsars格式：</li>
+<pre>lowsars data/dataconf.xml</pre>
+<li>Here <mo>data/dataconf.xml</mo> is the default filename of the Cena contest file. 这里的<mo>data/dataconf.xml</mo>是Cena的默认比赛文件名。</li>
+<li>The imported Lowsars contest file will be placed in <mo>ConD/dataconf.lsc</mo>. 导入后的Lowsars比赛文件将会被放在<mo>ConD/dataconf.lsc</mo>。</li>
+<li></li>
+</ul>
+<a name="four-Na"></a>
+<h2>4 Run the lowsars command 运行lowsars命令</h2>
+<ul>
+<li>When you have finished creating the contest file, you can run <mo>lowsars</mo> command in <mo>ConD/</mo> like below: </li>
+<li>当你创建完比赛文件以后，就可以像下面一样在比赛目录中运行<mo>lowsars</mo>命令：</li>
+<pre>lowsars contest_file.lsc</pre>
+<li>where <mo>contest_file.lsc</mo> is the contest file. 其中<mo>contest_file.lsc</mo>是比赛文件。</li>
+<li>This command tests every contestant's every problem, and gives the result. 此命令测试了所有选手的所有程序，并给出了结果。</li>
+<pre>lowsars contest_file.lsc -c lsz yh</pre>
+<li>This command tests lsz's and yh's every problem, and gives the result. 此命令测试了选手lsz和yh的所有程序，并给出了结果。</li>
+<pre>lowsars contest_file.lsc -p proba probb</pre>
+<li>This command tests every contestant's programs for the problem <mo>proba</mo> and <mo>probb</mo>, and gives the result. 此命令测试了所有选手的<mo>proba</mo>和<mo>probb</mo>两道题的程序，并给出了结果。</li>
+<pre>lowsars contest_file.lsc -a</pre>
+<li>The <mo>-a</mo> means only to test the programs that havn't been tested. It is often used when a new contestant's programs are added.</li> <mo>-a</mo>表示仅仅测试未测试过的程序。此选项经常用于新添加了一名选手时。</li>
+<pre>lowsars contest_file.lsc -r -c lsz -p river volunteer</pre>
+<li><mo>-r</mo> means not to test lsz's programs <mo>river</mo> and <mo>volunteer</mo>, but to remove the result of them (so you can use -a option later). <mo>-r</mo>表示不测试lsz的<mo>river</mo>和<mo>volunteer</mo>两个程序，而是去掉它们的评测结果(这样以后就可以使用-a选项了)。</li>
+<pre>lowsars contest_file.lsc -n</pre>
+<li><mo>-n</mo> means not to compile the programs, but to use the executables that are already in the <mo>src/</mo> directory. <mo>-n</mo>表示不编译程序，而是使用已经在<mo>src/<mo>里面的可执行程序。</li>
+<li>There are other options, which are not as useful as the ones listed above: 还有其它的不像上面列出的那么有用的选项：</li>
+<ul>
+   <li><mo>--help</mo> and <mo>--version</mo>: Show the brief help and version number. 显示简短的帮助和版本号。</li>
+   <li><mo>-q</mo>: Be quiet, do not show the result. 安静，不显示结果。</li>
+   <li><mo>-v</mo>: Be verbose, show some debug information. 输出一些调试信息。</li>
+   <li><mo>-V</mo>: Be more verbose, show all debug inforamtion. 输出全部的调试信息。</li>
+   <li><mo>-C</mo> and <mo>-P</mo>: I won't say about it here. These options are of little use for users, they were designed for the GUI (in the future). But as the plan for 0.3 version is out (and giving up the GUI plan for 0.2 series), these two options are now almost deserted. However, you can still refer to <mo>lowsars --help</mo> for explanations. 我在这里不做解释。这两个选项对于用户来说基本没有用处。它们本来是为了(未来的)GUI而设计的。但是随着0.3的计划的推出(和0.2版GUI的放弃)，这两个选项已经基本废弃了。然而，你还是可以在<mo>lowsars --help</mo>找到解释。</li>
+</ul>
+</ul>
+<a name="five-K"></a>
+<h2>5 See the result 查看结果</h2>
+<ul>
+<li>You can watch the result when lowsars is working. Besides, lowsars generate a lot of result files in the <mo>ConD/result/</mo> directory. You can understand them easily.</li>
+<li>当lowsars工作时，你可以看到结果。另外，lowsars在<mo>ConD/result/</mo>目录下产生了很多结果文件。它们很容易看懂。</li>
+
+</ul>
+<a name="six-Rb"></a>
+<h2>6 Others 其他</h2>
 </ul>
  </div>
-
