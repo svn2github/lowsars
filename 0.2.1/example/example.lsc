@@ -1,0 +1,22 @@
+problem first
+   cases 1 10
+      input @#.in
+      output @#.out
+      timelimit 2
+      memory 16384
+problem second
+   judge score second_judge %a %o
+   cases 1 10
+      input @#.in
+      output @#.out
+problem third
+   judge ignore white emptyline
+   cases 1 10
+      input @#.in
+      output @#.out
+problem fourth
+   judge ignore case
+   cases 1 10
+      input @#.in
+      output @#.out
+end

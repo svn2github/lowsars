@@ -1,0 +1,696 @@
+#!/bin/bash_by_lowsars
+# Lowsars - Lightweight OI Wonderful Scoring And Ranking System
+# Usage: lowsars [OPTIONS] CONFIGFILE (See below)
+# credit: oldherl@gmail.com
+LOWSARS_BINDIR=`dirname "$0"`
+
+shopt -s extglob
+[ "$LOWSARS_LOCALEDIR" = "" ]&&{
+[ "${0#*/}" = "$0" ]&&LOWSARS_LOCALEDIR="`which -- "$0" 2>/dev/null`"
+  #this occurs if this script is called in some special way, for example using valgrind
+LOWSARS_LOCALEDIR="`dirname -- "${LOWSARS_LOCALEDIR:-$0}"`/"
+[ "${0:0:1}" = "/" ]||LOWSARS_LOCALEDIR="$PWD/$LOWSARS_LOCALEDIR"
+LOWSARS_LOCALEDIR="${LOWSARS_LOCALEDIR//\/+(.\/)//}"
+while t="`basename -- "$LOWSARS_LOCALEDIR"`"; [ "$t" = ".." ]
+  do LOWSARS_LOCALEDIR="${LOWSARS_LOCALEDIR//\/!(..|*\/*)+(\/)..+(\/)//}"; done
+  #slow
+case "$t" in
+  bin|sbin)LOWSARS_LOCALEDIR="`dirname -- "$LOWSARS_LOCALEDIR"`/share/locale";;
+esac
+}
+LOWSARS_LOCALEDIR="$LOWSARS_LOCALEDIR/"
+LOWSARS_LOCALEDIR="${LOWSARS_LOCALEDIR//+(\/)//}"
+shopt -u extglob
+
+TEXTDOMAINDIR="$LOWSARS_LOCALEDIR"
+TEXTDOMAIN=lowsars
+export TEXTDOMAIN
+export TEXTDOMAINDIR
+show_version(){
+ echo "Lowsars 0.2.1";
+}
+#显示用法帮助
+show_usage(){
+ echo "Usage: $0 [OPTIONS] CONFIGFILE "'
+CONFIGFILE EXAMPLE:
+   
+   problem simple
+      input @.in
+      output @.out
+      cases 0 9
+         input @/@#.in
+         output @/@#.out
+         timelimit 1
+         memory 65536
+         score 10
+   end
+
+ The spaces are not necessary.
+ For more examples, see the example/ directory with the installing files.
+ 
+ OPTIONS:
+ -a, --add                        Do not override the existing result
+ -c, --contestants [CONTESTANTS]  Only judge contestants in the list
+ -C, --get-contestants            No judging, only to get a contestant list
+ -n, --no-compile                 Do not compile
+ -r, --remove                     Remove the result (often used with -c or -p)
+ -p, --problems [PROBLEMS]        Only judge problems in the list
+ -P, --get-problems               No judging, only to get a problem list
+ -q, --quiet                      Be quiet
+ -v, --verbose                    Output some extra debug information
+ -V, --test-verbose               More verbose, pass -v to lowsars-test
+ --help                           Get this help
+ --version                        Show version'
+}
+mymkdir(){
+if [ ! -d "$1" ]; then
+   rm "$1"
+   mkdir "$1"
+fi >&3 2>&3
+}
+mymkfile(){
+if [ -f "$1" ]; then
+   rm -R "$1"
+fi >&3 2>&3
+}
+getstatus(){
+case "$1" in
+   "SIGKILL")retstatus="Memory Limit Exceeded";;
+   "SIGXFSZ")retstatus="Output Limit Exceeded";;
+   *)retstatus="$1";;
+esac
+echo "$retstatus"
+}
+getstatusi18n(){
+#to make xgettext happy!
+case "$1" in
+   "Accepted")retstatusi18n="`gettext "Accepted"`";;
+   "Wrong Answer")retstatusi18n="`gettext "Wrong Answer"`";;
+   "Compile Error")retstatusi18n="`gettext "Compile Error"`";;
+   "Source Not Found")retstatusi18n="`gettext "Source Not Found"`";;
+   "Time Limit Exceeded")retstatusi18n="`gettext "Time Limit Exceeded"`";;
+   "Memory Limit Exceeded")retstatusi18n="`gettext "Memory Limit Exceeded"`";;
+   "Output Limit Exceeded")retstatusi18n="`gettext "Output Limit Exceeded"`";;
+   "Extra Point")retstatusi18n="`gettext "Extra Point"`";;
+   "Bonus!")retstatusi18n="`gettext "Bonus!"`";;
+   "Compiled Successfully")retstatusi18n="`gettext "Compiled Successfully"`";;
+   "Running Successfully")retstatusi18n="`gettext "Running Successfully"`";;
+   "Partial Point")retstatusi18n="`gettext "Partial Point"`";;
+   "Presentation Error")retstatusi18n="`gettext "Presentation Error"`";;
+   "Excutable Not Found")retstatusi18n="`gettext "Excutable Not Found"`";;
+   "No permission")retstatusi18n="`gettext "No permission"`";;
+   "Unknown run error")retstatusi18n="`gettext "Unknown run error"`";;
+   #"")retstatusi18n="`gettext ""`";;
+   #"")retstatusi18n="`gettext ""`";;
+   "Runtime Error"*)
+      retstatusi18n_rtenum=${1//"Runtime Error "/}
+      retstatusi18n="`gettext "Runtime Error %1"`"
+      retstatusi18n=${retstatusi18n//%1/$retstatusi18n_rtenum};;
+   *)retstatusi18n="$1"
+esac
+echo "$retstatusi18n"
+}
+gettotalfromuniform(){
+   gtfu_=
+   if [ -f "$1" ]; then {
+        while true; do
+           read gtfu_ gtfu_2
+           read gtfu_3 gtfu_4
+           if [ \( "$gtfu_" = Total \) -o \( -z "$gtfu_" \) ]; then break; fi
+        done
+      }< "$1" >&2
+      if [ "$gtfu_" = Total ]; then
+         echo $gtfu_2
+      else
+         echo 0
+      fi
+   else echo 0
+   fi
+}
+makesummary(){
+# Make summary use $1 as the seperator, output to &1
+   echo -n "`gettext "Name"`"
+   for probid in $fullprobls; do
+      echo -n "$1${probname[probid]}"
+   done
+   echo "$1`gettext "Total"`"
+   for ct in $fullctls; do
+      echo -n "$ct"
+      t=0
+      for probid in $fullprobls; do
+	 prob="${probname[probid]}"
+	 p=0
+	 #echo "$uniform/$ct/$prob" >&2
+	 if [ -f "$uniform/$ct/$prob" ]; then
+	    {
+	       p=1
+	       while true; do
+	          read x y z
+	          #echo "$x x $y x $z" >&2
+	          if [ "$x" = "Total" ]; then
+	             p=$y
+	             break
+	          elif [ "$x" = "" ]; then
+	             break
+	          fi
+	          read x
+	       done
+	    } < "$uniform/$ct/$prob"
+	 fi
+	 echo -n "$1$p"
+	 t=$((t+p))
+      done
+      echo "$1$t"
+   done
+}
+maxcsgp=100
+maxprob=100
+isctls=0
+isprobls=0
+isforce=0
+isdata=0
+tocompile=1
+isadd=0
+isquiet=0
+verbose=/dev/null
+out=/dev/stdout
+err=/dev/stderr
+header=$out
+uniform=result/result.uniform
+#olduniform=result/result.olduniform
+friendly=result/result.friendly
+summary=result/result.summary
+summarycsv=result/result.summary.csv
+sorted=result/result.sorted
+sortedcsv=result/result.sorted.csv
+notdone=result/lowsars.notdone
+ctls=
+probls=
+cfgfn=
+#读取命令行参数
+while if ! getopts :aqcpndDvVCrP-: param
+  then param=""; arg=${!OPTIND}; ((OPTIND++<=$#))
+  elif [ "$param" = "-" ]; then
+    param="--${OPTARG%%=*}"
+    arg="`[ "$param" = "--$OPTARG" ]||echo ${OPTARG#*=}=`";:
+  else param="-$param"; arg="$OPTARG=";:; fi; do
+  isctls_=$isctls
+  isprobls_=$isprobls
+  isctls=0
+  isprobls=0
+  case "$param" in
+    --help)show_usage;exit 0;;
+    --version)show_version;exit 0;;
+    -a|--add) isadd=1;;
+    -q|--quiet) out=/dev/null;;
+    -c|--contestants) isctls=1 isctls_=1;;
+    -p|--problems) isprobls=1 isprobls_=1;;
+    -n|--no-compile) tocompile=0;;
+#    -d|--generate-data) isdata=1;;
+    -v|--verbose) verbose=/dev/stderr;;
+    -V|--test-verbose) verbose=/dev/stderr;vverbose=1;;
+    -r|--remove) isremove=1;;
+    -C|--get-contestants) onlyc=1 header=/dev/null;;
+    -P|--get-problems) onlyp=1 header=/dev/null;;
+    -\?|-*) echo `gettext "No such parameter:"` $OPTARG 1>&2;;
+    "")
+      isctls=$isctls_
+      isprobls=$isprobls_
+      if [ $isctls = 1 ] ; then
+        ctls="$ctls $arg"
+      elif [ $isprobls = 1 ] ; then
+        probls="$probls $arg"
+      elif [ "$cfgfn" = "" ] ; then
+        cfgfn="$arg"
+      else 
+        gettext "Parameter not used: " 1>&2
+        echo "$arg" 1>&2
+      fi;;
+  esac
+done
+if [ ! -e "$cfgfn" ]; then
+   [ "$cfgfn" = "" ]|| gettext "File not found: "
+   [ "$cfgfn" = "" ]&& gettext "No input file specified. "
+   echo $cfgfn
+   echo "Try --help"
+   exit 1
+fi
+{
+echo -n "LowSars - " >&4
+echo `gettext "Lightweight OI Wonderful Scoring And Ranking System"` >&4
+echo "Copyright 2007-2008 Lsz (oldherl@gmail.com)" >&4
+null=/dev/null
+echo Ct. list $ctls >&3
+echo Prob. list $probls >&3
+{
+comm=xxx
+prob=0
+outofprob=1
+csgroup=0
+#读取试题配置文件
+while [ "$comm" != end ] ; do
+   read comm para
+   case "$comm" in
+      end)
+          csgroups[$prob]=$csgroup
+          probs=$prob
+          echo END >&3;;
+      problem)
+          csgroups[$prob]=$csgroup
+          echo problem: $para >&3
+          a=$((prob++))
+          probname[$prob]=$para
+          inf[$prob]=$para.in
+          outf[$prob]=$para.out
+          csgroup=0;;
+      input)
+          para=${para//@/${probname[prob]}}
+          # TODO: multiple input files on seperate lines
+          if [ $csgroup = 0 ]; then
+            inf[$prob]=$para
+            echo "input file for prob $prob ${probname[prob]} : ${inf[prob]}" >&3
+          else
+            para=../data/$para
+            infcsg[$prob*$maxcsgp+$csgroup]=$para
+            echo "input file for csgp $csgroup of prob $prob ${probname[prob]} : ${infcsg[$prob*$maxcsgp+$csgroup]}" >&3
+          fi;;
+      output)
+          para=${para//@/${probname[prob]}}
+          if [ $csgroup = 0 ]; then
+            outf[$prob]=$para
+            echo "output file for prob $prob ${probname[prob]} : ${outf[prob]}" >&3
+          else
+            para=../data/$para
+            outfcsg[$prob*$maxcsgp+$csgroup]=$para
+            echo "output file for csgp $csgroup of prob $prob ${probname[prob]} : ${outfcsg[$prob*$maxcsgp+$csgroup]}" >&3
+          fi;;
+      judge)
+          para=${para//@/${probname[prob]}}
+          if [ $csgroup = 0 ]; then
+            read spjtype spjexe <<< "$para"
+            if [ "$spjtype" = ignore ];then
+               ignore=
+               while [ -n "$spjexe" ]; do
+                  read ig1 spjexe <<< "$spjexe"
+                  case "$ig1" in
+                     space)ignore="$ignore -b";;
+                     emptyline)ignore="$ignore -B";;
+                     nothing)ignore="";;
+                     white)ignore="$ignore -w";;
+                     case)ignore="$ignore -i";;
+                  esac
+               done
+               spjpara[prob]="-j"
+               spj[prob]="diff %a %o -q $ignore"
+            else
+               read spjexe1 spjexe2 <<< "$spjexe"
+               echo "spjexe1 $spjexe1 spjexe2 $spjexe2" >&3
+               [ -f "data/$spjexe1" ]&& spjexe="../data/$spjexe"
+               spj[prob]="$spjexe"
+               spjexe=
+               [ "$spjtype" = score ]&& spjexe="s"
+               spjpara[prob]="-${spjexe}j"
+            fi
+            echo "judge for prob $prob ${probname[prob]} : ${spj[prob]}" >&3
+          else
+            echo "unable to set judge inside of a case!!" >&2
+            exit 1
+          fi;;
+      cases)
+          a=$((csgroup++))
+          read csbegin[$prob*$maxcsgp+$csgroup] csend[$prob*$maxcsgp+$csgroup] <<< "$para"
+          echo "case $csgroup : ${csbegin[$prob*$maxcsgp+$csgroup]} - ${csend[$prob*$maxcsgp+$csgroup]}" >&3
+          tlcsg[$prob*$maxcsgp+$csgroup]=1
+          mlcsg[$prob*$maxcsgp+$csgroup]=262144
+          olcsg[$prob*$maxcsgp+$csgroup]="1.5*s+100"
+          sccsg[$prob*$maxcsgp+$csgroup]=10
+          para="../data/@/@#.in"
+          infcsg[$prob*$maxcsgp+$csgroup]=${para//@/${probname[prob]}}
+          para="../data/@/@#.out"
+          outfcsg[$prob*$maxcsgp+$csgroup]=${para//@/${probname[prob]}} ;;
+      case)
+          a=$((csgroup++))
+          [ "$para" = "nonumber" ]&& para=$csgroup
+          read csbegin[$prob*$maxcsgp+$csgroup] csend[$prob*$maxcsgp+$csgroup] <<< "$para $para"
+          echo "case $csgroup : ${csbegin[$prob*$maxcsgp+$csgroup]} - ${csend[$prob*$maxcsgp+$csgroup]}" >&3
+          tlcsg[$prob*$maxcsgp+$csgroup]=1
+          mlcsg[$prob*$maxcsgp+$csgroup]=262144
+          olcsg[$prob*$maxcsgp+$csgroup]="1.5*s+100"
+          sccsg[$prob*$maxcsgp+$csgroup]=10
+          para="../data/@/@#.in"
+          infcsg[$prob*$maxcsgp+$csgroup]=${para//@/${probname[prob]}}
+          para="../data/@/@#.out"
+          outfcsg[$prob*$maxcsgp+$csgroup]=${para//@/${probname[prob]}} ;;
+      timelimit|time|tlimit)
+          if [ $csgroup = 0 ]; then
+            echo "unable to set timelimit outside of a case!!" >&2
+            exit 1
+          else
+            tlcsg[$prob*$maxcsgp+$csgroup]=$para
+            echo "timelimit for csgp $csgroup of prob $prob ${probname[prob]} : ${tlcsg[$prob*$maxcsgp+$csgroup]}" >&3
+          fi;;
+      score)
+          if [ $csgroup = 0 ]; then
+            echo "unable to set score outside of a case!!" >&2
+            exit 1
+          else
+            sccsg[$prob*$maxcsgp+$csgroup]=$para
+            echo "score for csgp $csgroup of prob $prob ${probname[prob]} : ${sccsg[$prob*$maxcsgp+$csgroup]}" >&3
+          fi;;
+      memory|memorylimit|mlimit)
+          if [ $csgroup = 0 ]; then
+            echo "unable to set memorylimit outside of a case!!" >&2
+            exit 1
+          else
+            mlcsg[$prob*$maxcsgp+$csgroup]=$para
+            echo "memorylimit for csgp $csgroup of prob $prob ${probname[prob]} : ${mlcsg[$prob*$maxcsgp+$csgroup]}" >&3
+          fi;;
+      outlimit|olimit|outputlimit)
+          if [ $csgroup = 0 ]; then
+            echo "unable to set outputlimit outside of a case!!" >&2
+            exit 1
+          else
+            olcsg[$prob*$maxcsgp+$csgroup]=$para
+            echo "outputlimit for csgp $csgroup of prob $prob ${probname[prob]} : ${olcsg[$prob*$maxcsgp+$csgroup]}" >&3
+          fi;;
+      "");;
+      *) gettext "No such command in config file:" 1>&2
+         echo "$comm" 1>&2
+         exit 1;;
+   esac
+done
+} < $cfgfn
+dr=`dirname $cfgfn`
+cd $dr
+echo "wd  "`pwd` >&3
+#计算真正的选手列表和待测试题列表
+# TODO: 过滤掉重复的ct，比如实际上只有a b，输入a b b，输出应该不是a b b而是a b
+realctls=''
+fullctls=""
+for ct in `ls ./src/` ; do
+  echo "Looking for CT. $ct..." >&3
+  if [ -d "./src/$ct" ]; then
+     fullctls="$fullctls $ct"
+  fi
+done
+if [ "$ctls" = "" ]; then
+   ctls=$fullctls
+fi
+   for ct in $ctls ; do
+     echo "Looking for CT. $ct..." >&3
+     if [ -d "./src/$ct" ]; then
+        realctls="$realctls $ct"
+     fi
+   done
+ctls=$realctls
+if [ "${ctls:0:1}" = " " ]; then
+   ctls=${ctls:1}
+fi
+echo "Real ctls : $ctls" >&3
+fullprobls=""
+for ((prob=1;prob<=probs;prob++)) do
+   fullprobls="$fullprobls $prob"
+done
+if [ "$probls" = "" ]; then
+   probls="$fullprobls"
+else
+   realprobls=""
+   for proba in $probls; do
+     for ((prob=1;prob<=probs;prob++)) do
+        [ "$proba" = "${probname[prob]}" ]&& realprobls="$realprobls $prob"
+     done
+   done
+   probls=$realprobls
+fi
+if [ "${probls:0:1}" = " " ]; then
+   probls=${probls:1}
+fi
+echo "Real probls : $probls" >&3
+probnamels=""
+for probid in $probls; do
+  probnamels="$probnamels ${probname[probid]}"
+done
+if [ "${probnamels:0:1}" = " " ]; then
+   probnamels=${probnamels:1}
+fi
+echo "Real probnamels : $probnamels" >&3
+if [ "$onlyc" = 1 ]; then
+   echo "$ctls"
+   exit 0
+fi
+if [ "$onlyp" = 1 ]; then
+   echo "$probnamels"
+   exit 0
+fi
+{
+mkdir result && echo "result dir. created"
+#rm -R "$olduniform"
+#mv "$uniform" "$olduniform"
+mymkdir "$uniform"
+date > "$notdone"
+rm -R testing
+if [ "$isremove" = 1 ]; then
+   for ct in $ctls; do
+      for probid in $probls; do
+         prob=${probname[$prob]}
+         echo "Removing $uniform/$ct/$prob"
+         rm -R "$uniform/$ct/$prob"
+      done
+   done
+   rm $notdone
+   exit
+fi
+mkdir testing && echo "testing dir. created"
+
+a='"Uniform" format, no i18n:
+$result.uniform/lsz/plus:
+1 0.123 10 Accepted.
+
+2 0.456 0 Wrong Answer.
+<error message>
+3 1.234 0 Time Limit Exceeded.
+<killed>
+...
+total 50
+'
+b='"Friendly" format, allow i18n:
+Testing lsz.plus.1(plus1.in)... Accepted. 0.123s Score:10
+...
+Total score for lsz.plus: 50
+...
+Total score for lsz: 230
+...
+'
+rm $summary*
+rm $sorted*
+# these are generated according to the "uniform" one.
+rm $friendly
+# TODO: what should be done with "friendly" result files??
+} 2>&3 1>&3
+#真正开始的地方
+ctid=0
+for ct in $ctls; do
+   a=$((ctid++))
+   tt[$ctid]=0
+   echo "Entering Ctid $ctid..." >&3
+   a="`gettext "Start testing %1..."`"
+   a=${a//%1/$ct}
+   echo "$a" | tee -a "$friendly"
+   mymkdir "$uniform/$ct" >&3 2>&3
+   #echo -n "$ct" >> $summary
+   for probid in $probls; do
+      prob=${probname[probid]}
+      echo "Entering Probid $probid $prob..." >&3
+      [ "$isremove" = 1 ] && mymkfile "$uniform/$ct/$prob"
+      pt[$ctid*$maxprob+$probid]=0
+      exefn="src/$ct/$prob"
+      totest=1
+      [ "$isadd" = 1 ]&& [ -f "$uniform/$ct/$prob" ] && totest=0
+      echo -n "   " | tee -a "$friendly"
+      [ $totest = 0 ]&& {
+         a="`gettext "Not to test %1"`"
+         a=${a//%1/$ct.$prob}
+         echo "$a" | tee -a "$friendly"
+         echo gettotalfromuniform "$uniform/$ct/$prob" >&3
+         pt[ctid*maxprob+probid]=`gettotalfromuniform "$uniform/$ct/$prob"`
+      }
+      [ $totest = 1 ]&&{
+      rm "$uniform/$ct/$prob" 2>&3 >&3
+      rm -r testing/* 2>&3 >&3
+      if [ $tocompile = 1 ]; then
+         mkdir testing/compile 2>&3 >&3
+         cp $exefn* testing/compile 2>&3 >&3
+         exefntesting=testing/compile/$prob
+         rm -r $exefntesting 2>&3 >&3
+         a="`gettext "Compiling %1 ..."`"
+         echo -n "${a//%1/$ct.$prob}" | tee -a "$friendly" #use lowsars-test to compile
+         a=`$LOWSARS_BINDIR/lowsars-test $exefntesting -C\* --check-compile`
+         echo "$LOWSARS_BINDIR/lowsars-test $exefntesting -C\* --check-compile" >&3
+         read x1 x2 x3 <<< "$a"
+         echo "$x1 $x2 $x3" >&3
+         if [ -f "$exefntesting" ]; then
+             x3=`gettext "Success"`
+             cp $exefntesting testing/x$prob 2>&3 >&3
+             #this is useful when the problem is called `compile', although it looks ugly
+             rm -r testing/compile >&3 2>&3
+             mv testing/x$prob testing/$prob >&3 2>&3
+         else
+             echo "Total 0" > "$uniform/$ct/$prob"
+             totest=2
+             rm -r testing/compile 2>&3 >&3
+         fi
+         echo "`getstatusi18n "$x3"`" | tee -a "$friendly"
+      else
+         echo "`gettext "Not to compile."`" | tee -a "$friendly"
+         cp $exefn testing/ >&3 2>&3
+      fi
+      }
+      [ $totest = 1 ]&&{
+      for ((csgpid=1;csgpid<=csgroups[probid];csgpid++)); do
+         echo "Entering Gpid $csgpid..." >&3
+         for ((csid=csbegin[probid*maxcsgp+csgpid]; csid<=csend[probid*maxcsgp+csgpid]; csid++)); do
+            #echo -n "`gettext "Testing "`$ct.$prob.$csid ..."
+            inf4data=${infcsg[$probid*$maxcsgp+$csgpid]//#/$csid}
+            read firstinf4data <<< "$inf4data"
+            firstinf4data="`basename "$firstinf4data"`"
+            echo -n "      `gettext "Testing "`$ct.$prob.$csid($firstinf4data)... " | tee -a "$friendly"
+            { #>&3
+            echo "Entering Csid $csid..."
+            #准备i/o文件列表、从数组中获取信息
+            inf4prog=${inf[probid]}
+            outf4prog=${outf[probid]}
+	    cd testing
+	    pwd
+            echo "Infile for program: $inf4prog"
+            echo "Outfile for program: $outf4prog"
+            echo "$probid*$maxcsgp+$csgpid=$((probid*maxcsgp+csgpid))"
+            echo ""
+            inf4data=${infcsg[$probid*$maxcsgp+$csgpid]//#/$csid}
+            outf4data=${outfcsg[$probid*$maxcsgp+$csgpid]//#/$csid}
+            timelimit=${tlcsg[$probid*$maxcsgp+$csgpid]}
+            memlimit=${mlcsg[$probid*$maxcsgp+$csgpid]}
+            score=${sccsg[$probid*$maxcsgp+$csgpid]}
+            echo "in, out, tl, ml, sc:$inf4data $outf4data $timelimit $memlimit $score"
+            tmp=`wc -c -- "$outf4data"`
+            read out4datasize tmp <<< "$tmp"
+            outlimitexpr=${olcsg[$probid*$maxcsgp+$csgpid]//s/$out4datasize}
+            outlimit=`bc <<<"$outlimitexpr"`
+            outlimit=${outlimit%%.*}
+            inf4test=''
+            for i in $inf4prog; do
+               read i1 inf4prog <<< $inf4prog
+               read i2 inf4data <<< $inf4data
+               inf4test="$inf4test -I $i1 $i2"
+            done
+            echo "Infile list for testing:  $inf4test"
+	    echo "\$exefn" $exefn
+	    baseexefn=`basename "$exefn"`
+#	    calling="lowsars-test ./$baseexefn $inf4test -O $outf4prog $outf4data -t$timelimit -m$memlimit --score=$score --real-time"
+#	    [ "$vverbose" = 1 ]&& calling="$calling -v"
+#	    [ -n "$spj[probid]" ]&& calling="$calling ${spj[probid]}"
+	    calling=()
+	    calling[1]=$LOWSARS_BINDIR/lowsars-test
+	    calling[2]="./$baseexefn"
+	    i=3
+	    while [ -n "$inf4test" ]; do
+	       read calling[i] inf4test <<< "$inf4test"
+	       i=$((i+1))
+	    done
+	    calling[$i]=-O
+	    i=$((i+1)); calling[$i]="$outf4prog"
+	    i=$((i+1)); calling[$i]="$outf4data"
+	    i=$((i+1)); calling[$i]="-t$timelimit"
+	    i=$((i+1)); calling[$i]="-m$memlimit"
+	    i=$((i+1)); calling[$i]="-o$outlimit"
+	    i=$((i+1)); calling[$i]="--score=$score"
+	    i=$((i+1)); calling[$i]="--real-time"
+	    [ "$vverbose" = 1 ]&&{
+	       i=$((i+1)); calling[$i]=-v
+	    }
+	    [ -n "${spjpara[probid]}" ]&&{
+	       i=$((i+1)); calling[$i]="${spjpara[probid]}"
+	       i=$((i+1)); calling[$i]="${spj[probid]}"
+	    }
+	    pwd
+            echo "Calling ${calling[@]}"
+            resstr="`"${calling[@]}" 2>&3`"
+            cd ..
+            if [ "$resstr" = "" ]; then
+               resstr="0 0 `gettext "Unknown Tester Error"` $?
+               "
+            fi
+            echo "Returned from lowsars-test: $resstr"
+            ifs=$IFS
+            IFS=" "
+            {
+               read resscore restime resstatus
+               read detail
+            } <<< $resstr
+            IFS=$ifs
+            } >&3
+            resstatus=`getstatus "$resstatus"`
+            resstatusi18n="`getstatusi18n "$resstatus"`"
+            {
+               echo "$csid $restime $resscore $resstatus"
+               echo "$detail"
+            }>> $uniform/$ct/$prob
+            echo "$resstatusi18n $restime"`gettext s` `gettext "Score: "`"$resscore" | tee -a "$friendly"
+            pt[ctid*maxprob+probid]=$((pt[ctid*maxprob+probid]+resscore))
+            echo "Now score ${pt[ctid*maxprob+probid]}" >&3
+         done
+      done
+      }
+      [ $totest = 0 ]||{
+      echo "Total ${pt[ctid*maxprob+probid]}" >> "$uniform/$ct/$prob"
+      str_="      `gettext "Total score for %1 : %2"`"
+      str_=${str_//"%1"/"$ct.$prob"}
+      str_=${str_//"%2"/"${pt[$ctid*$maxprob+$probid]}"}
+      echo "$str_" | tee -a $friendly
+      #echo -n " ${pt[ctid*maxprob+probid]}" >> $summary
+      }
+      tt[ctid]=$((tt[ctid]+pt[ctid*maxprob+probid]))
+      rm testing/* >&3 2>&3
+   done
+   #echo "$ct total ${tt[ctid]}" >> $uniform
+   str_="   `gettext "Total score for %1 : %2"`"
+   str_=${str_//"%1"/"$ct"}
+   str_=${str_//"%2"/"${tt[ctid]}"}
+   echo "$str_" | tee -a $friendly
+   #echo " ${tt[ctid]}" >> $summary
+done
+gettext "Judging ended at: " | tee -a $friendly
+date | tee -a $friendly
+#转换格式
+echo "producing summary..." >&3
+makesummary "	" 1>$summary
+makesummary "," 1>$summarycsv
+echo "Starting sort..." >&3
+probid=0
+for prob in $probnamels; do
+   x=$((probid++))
+   {
+      read aaa
+      cat <<< "$aaa"
+      cat | sort -g -k $((probid+1)) -r -t "	"
+   } < $summary > $sorted.$probid.$prob
+   {
+      read aaa
+      cat <<< "$aaa"
+      cat | sort -g -k $((probid+1)) -r -t ","
+   } < $summarycsv > $sorted.$probid.$prob.csv
+done
+x=$((probid++))
+{
+   read aaa
+   cat <<< "$aaa"
+   cat | sort -g -k $((probid+1)) -r -t "	"
+} < $summary > $sorted
+{
+   read aaa
+   cat <<< "$aaa"
+   cat | sort -g -k $((probid+1)) -r -t ","
+} < $summarycsv > $sortedcsv
+echo "All done." >&3
+rm $notdone
+} 1>$out 3>$verbose 2>$err 4>$header
+exit 0
