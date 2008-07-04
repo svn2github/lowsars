@@ -2,6 +2,10 @@
 # Lowsars - Lightweight OI Wonderful Scoring And Ranking System
 # Usage: lowsars [OPTIONS] CONFIGFILE (See below)
 # credit: oldherl@gmail.com
+
+#FIXME: please make any ugly codes more logical
+#example: change x$name to $name.prob
+
 LOWSARS_BINDIR=`dirname "$0"`
 
 shopt -s extglob
