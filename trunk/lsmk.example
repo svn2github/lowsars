@@ -16,9 +16,7 @@ SRCDIR?=./src
 DATADIR?=./data
 RESULTDIR?=./result
 
-SHELL=/bin/sh
-#shell can be a special program, for network submit
-EXEC=lowsars-test
+BINEXT=
 
 USERSRCDIR?=$(SRCDIR)/$(LOWSARS_USER)
 PROBSRCDIR?=$(USERSRCDIR)/$(PROB)
@@ -31,41 +29,55 @@ usernames=yh lsz
 
 u=$(foreach user,$(usernames),$(1))
 
-SHELL=/bin/sh
-BINEXT=
-
 judge: $(RESULTDIR)/summary ;
-.PHONY: judge
+.PHONY: judge clean
+
+$(RUNDIR):
+	mkdir -p /tmp/lowsars-make-.../run
+	ln -s /tmp/lowsars-make-.../run "$@"
+$(JUDGEDIR):
+	mkdir -p /tmp/lowsars-make-.../judge
+	ln -s /tmp/lowsars-make-.../judge "$@"
+clean:
+	rm -rf "$(RUNDIR)"/*
+	rm -rf "$(JUDGEDIR)"/*
+	-rmdir /tmp/lowsars-make-.../run
+	-rmdir /tmp/lowsars-make-.../judge
 $(JUDGEDIR)/%.user/first.prob/.compile : LOWSARS_USER=%
 
-$(call u,$(JUDGEDIR)/$(user).user/first.prob/.compile):
-	#cd $(RUNDIR) && $(EXEC) --source=$(srcdir) --check-compile first
-	mkdir -p `dirname -- "$@"`
-	echo "0 0 Compiled\nno additional information" >$@
-$(call u,$(JUDGEDIR)/$(user).user/first.prob/1.prepare): $(JUDGEDIR)/$(LOWSARS_USER).user/first.prob/.compile
-	mkdir -p `dirname -- "$@"`
-	echo "0 0 OK\ninput files ready" >$@
-$(call u,$(JUDGEDIR)/$(user).user/first.prob/1.run): $(JUDGEDIR)/$(LOWSARS_USER).user/first.prob/1.prepare
+$(JUDGEDIR)/%.user/first.prob/.compile : $(RUNDIR) $(JUDGEDIR)
+	mkdir -p "`dirname -- "$@"`"
+	lowsars-test >"$@" --check-compile first --workdir "$(RUNDIR)/%/first" --source-dir="$(PROBSRCDIR)" --compile-limits ""
+#	echo "0 0 Compiled\nno additional information" >$@
+$(JUDGEDIR)/%.user/first.prob/1.prepare : $(JUDGEDIR)/%.user/first.prob/.compile
+	mkdir -p "`dirname -- "$@"`"
+	lowsars-exec >"$@" --prepare-only first --workdir "$(RUNDIR)/%/first" --data-dir "$(DATADIR)/first" --prepare-limits ""
+#	echo "0 0 OK\ninput files ready" >$@
+$(JUDGEDIR)/%.user/first.prob/1.run): $(JUDGEDIR)/%.user/first.prob/1.prepare
 	# $(SRCDIR)/$(LOWSARS_USER)/first/first$(BINEXT)
 	#运行，如果失败输出到1.judge
-	mkdir -p `dirname -- "$@"`
-	@echo "0 0 Running Successfully\nfor point 1" >$@
-$(call u,$(JUDGEDIR)/$(user).user/first.prob/1.judge): $(JUDGEDIR)/$(LOWSARS_USER).user/first.prob/1.run
+	mkdir -p "`dirname -- "$@"`"
+	lowsars-exec >"$@" --no-prepare first --workdir "$(RUNDIR)/%/first" --data-dir "$(DATADIR)/first" --run-limits ""
+	#echo "0 0 Running Successfully\nfor point 1" >$@
+$(JUDGEDIR)/%.user/first.prob/1.judge): $(JUDGEDIR)/%.user/first.prob/1.run
 	#评测
-	mkdir -p `dirname -- "$@"`
-	@echo "0 0 Accepted\nfor point 1" >$@
+	mkdir -p "`dirname -- "$@"`"
+	lowsars-exec >"$@" --plain-check first --workdir "$(RUNDIR)/%/first" --data-dir "$(DATADIR)/first" --judge-limits ""
+	#echo "0 0 Accepted\nfor point 1" >$@
 .SECONDARY: $(JUDGEDIR)/$(user).user/first.prob/.summary
-$(call u,$(JUDGEDIR)/$(user).user/first.prob/.summary): $(JUDGEDIR)/$(LOWSARS_USER).user/first.prob/.compile $(JUDGEDIR)/$(LOWSARS_USER).user/first.prob/1.judge
+$(RESULTDIR)/%.user/first.prob/.summary: $(JUDGEDIR)/%.user/first.prob/1.judge
 	#结果整理
-	mkdir -p `dirname -- "$@"`
-	@echo "0 0 OK\n*" >$@
+	mkdir -p "`dirname -- "$@"`"
+	lowsars-summary --problem "$^"
+	#echo "0 0 OK\n*" >$@
 $(call u,$(JUDGEDIR)/$(user).user/.summary): $(JUDGEDIR)/$(LOWSARS_USER).user/first.prob/.summary
 	#用户结果整理
-	mkdir -p `dirname -- "$@"`
-	@echo "0 0 OK\n0 *" >$@
+	mkdir -p "`dirname -- "$@"`"
+	lowsars-summary --user "$^"
+	#echo "0 0 OK\n0 *" >$@
 $(RESULTDIR)/summary: $(call u,$(JUDGEDIR)/$(user).user/.summary)
 	#囧
 	mkdir -p `dirname -- "$@"`
-	@echo "lsz 0 0 *" >$@
-.PHONY: judge
+	lowsars-summary --all "$^"
+	#echo "lsz 0 0 *" >$@
 
