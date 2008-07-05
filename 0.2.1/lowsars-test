@@ -124,6 +124,7 @@ echo "${bigcache[*]}"
 * -c, --compile-limit=time|off   specify the timelimit for compiling
   -C, --compiler=command|*       specify the compiler or *language for language
                                    default, * or *auto for automatic
+      --compiler-LANG=command    special compiler for the language or ext LANG
       --check-compile            return full score if compiled, do not run
       --checker=command          set -n -f and specify the judge command
 *     --clean                    remove all copied files after judge

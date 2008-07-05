@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-06-17 16:27+0800\n"
+"POT-Creation-Date: 2008-07-05 08:49+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,147 +16,147 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../lowsars:86 ../lowsars:68 ../lowsars:87
+#: ../lowsars:86 ../lowsars:68 ../lowsars:87 ../lowsars:91
 msgid "Accepted"
 msgstr ""
 
-#: ../lowsars:87 ../lowsars:69 ../lowsars:88
+#: ../lowsars:87 ../lowsars:69 ../lowsars:88 ../lowsars:92
 msgid "Wrong Answer"
 msgstr ""
 
-#: ../lowsars:88 ../lowsars:70 ../lowsars:89
+#: ../lowsars:88 ../lowsars:70 ../lowsars:89 ../lowsars:93
 msgid "Compile Error"
 msgstr ""
 
-#: ../lowsars:89 ../lowsars:71 ../lowsars:90
+#: ../lowsars:89 ../lowsars:71 ../lowsars:90 ../lowsars:94
 msgid "Source Not Found"
 msgstr ""
 
-#: ../lowsars:90 ../lowsars:72 ../lowsars:91
+#: ../lowsars:90 ../lowsars:72 ../lowsars:91 ../lowsars:95
 msgid "Time Limit Exceeded"
 msgstr ""
 
-#: ../lowsars:91 ../lowsars:73 ../lowsars:92
+#: ../lowsars:91 ../lowsars:73 ../lowsars:92 ../lowsars:96
 msgid "Memory Limit Exceeded"
 msgstr ""
 
-#: ../lowsars:92 ../lowsars:74 ../lowsars:93
+#: ../lowsars:92 ../lowsars:74 ../lowsars:93 ../lowsars:97
 msgid "Output Limit Exceeded"
 msgstr ""
 
-#: ../lowsars:93 ../lowsars:75 ../lowsars:94
+#: ../lowsars:93 ../lowsars:75 ../lowsars:94 ../lowsars:98
 msgid "Extra Point"
 msgstr ""
 
-#: ../lowsars:94 ../lowsars:76 ../lowsars:95
+#: ../lowsars:94 ../lowsars:76 ../lowsars:95 ../lowsars:99
 msgid "Bonus!"
 msgstr ""
 
-#: ../lowsars:95 ../lowsars:77 ../lowsars:96
+#: ../lowsars:95 ../lowsars:77 ../lowsars:96 ../lowsars:100
 msgid "Compiled Successfully"
 msgstr ""
 
-#: ../lowsars:96 ../lowsars:78 ../lowsars:97
+#: ../lowsars:96 ../lowsars:78 ../lowsars:97 ../lowsars:101
 msgid "Running Successfully"
 msgstr ""
 
-#: ../lowsars:97 ../lowsars:79 ../lowsars:98
+#: ../lowsars:97 ../lowsars:79 ../lowsars:98 ../lowsars:102
 msgid "Partial Point"
 msgstr ""
 
-#: ../lowsars:98 ../lowsars:80 ../lowsars:99
+#: ../lowsars:98 ../lowsars:80 ../lowsars:99 ../lowsars:103
 msgid "Presentation Error"
 msgstr ""
 
-#: ../lowsars:99 ../lowsars:81 ../lowsars:100
+#: ../lowsars:99 ../lowsars:81 ../lowsars:100 ../lowsars:104
 msgid "Excutable Not Found"
 msgstr ""
 
-#: ../lowsars:100 ../lowsars:82 ../lowsars:101
+#: ../lowsars:100 ../lowsars:82 ../lowsars:101 ../lowsars:105
 msgid "No permission"
 msgstr ""
 
-#: ../lowsars:101 ../lowsars:83 ../lowsars:102
+#: ../lowsars:101 ../lowsars:83 ../lowsars:102 ../lowsars:106
 msgid "Unknown run error"
 msgstr ""
 
-#: ../lowsars:106 ../lowsars:88 ../lowsars:107
+#: ../lowsars:106 ../lowsars:88 ../lowsars:107 ../lowsars:111
 msgid "Runtime Error %1"
 msgstr ""
 
-#: ../lowsars:131 ../lowsars:113 ../lowsars:132
+#: ../lowsars:131 ../lowsars:113 ../lowsars:132 ../lowsars:136
 msgid "Name"
 msgstr ""
 
-#: ../lowsars:135 ../lowsars:117 ../lowsars:136
+#: ../lowsars:135 ../lowsars:117 ../lowsars:136 ../lowsars:140
 msgid "Total"
 msgstr ""
 
-#: ../lowsars:215 ../lowsars:197
+#: ../lowsars:215 ../lowsars:197 ../lowsars:219
 msgid "No such parameter:"
 msgstr ""
 
-#: ../lowsars:226 ../lowsars:208
+#: ../lowsars:226 ../lowsars:208 ../lowsars:230
 msgid "Parameter not used: "
 msgstr ""
 
-#: ../lowsars:232 ../lowsars:214
+#: ../lowsars:232 ../lowsars:214 ../lowsars:236
 msgid "File not found: "
 msgstr ""
 
-#: ../lowsars:233 ../lowsars:215
+#: ../lowsars:233 ../lowsars:215 ../lowsars:237
 msgid "No input file specified. "
 msgstr ""
 
-#: ../lowsars:240 ../lowsars:222
+#: ../lowsars:240 ../lowsars:222 ../lowsars:244
 msgid "Lightweight OI Wonderful Scoring And Ranking System"
 msgstr ""
 
-#: ../lowsars:377 ../lowsars:359
+#: ../lowsars:377 ../lowsars:359 ../lowsars:381
 msgid "No such command in config file:"
 msgstr ""
 
-#: ../lowsars:496 ../lowsars:478
+#: ../lowsars:496 ../lowsars:478 ../lowsars:500
 msgid "Start testing %1..."
 msgstr ""
 
-#: ../lowsars:511 ../lowsars:493
+#: ../lowsars:511 ../lowsars:493 ../lowsars:515
 msgid "Not to test %1"
 msgstr ""
 
-#: ../lowsars:521 ../lowsars:503 ../lowsars:525
+#: ../lowsars:521 ../lowsars:503 ../lowsars:525 ../lowsars:529
 msgid "Compiling %1 ..."
 msgstr ""
 
-#: ../lowsars:528 ../lowsars:510 ../lowsars:532
+#: ../lowsars:528 ../lowsars:510 ../lowsars:532 ../lowsars:536
 msgid "Success"
 msgstr ""
 
-#: ../lowsars:536 ../lowsars:518 ../lowsars:544
+#: ../lowsars:536 ../lowsars:518 ../lowsars:544 ../lowsars:548
 msgid "Not to compile."
 msgstr ""
 
-#: ../lowsars:548 ../lowsars:530 ../lowsars:556
+#: ../lowsars:548 ../lowsars:530 ../lowsars:556 ../lowsars:560
 msgid "Testing "
 msgstr ""
 
-#: ../lowsars:611 ../lowsars:593 ../lowsars:619
+#: ../lowsars:611 ../lowsars:593 ../lowsars:619 ../lowsars:623
 msgid "Unknown Tester Error"
 msgstr ""
 
-#: ../lowsars:629 ../lowsars:611 ../lowsars:637
+#: ../lowsars:629 ../lowsars:611 ../lowsars:637 ../lowsars:641
 msgid "s"
 msgstr ""
 
-#: ../lowsars:629 ../lowsars:611 ../lowsars:637
+#: ../lowsars:629 ../lowsars:611 ../lowsars:637 ../lowsars:641
 msgid "Score: "
 msgstr ""
 
 #: ../lowsars:637 ../lowsars:647 ../lowsars:619 ../lowsars:629 ../lowsars:645
-#: ../lowsars:655
+#: ../lowsars:655 ../lowsars:649 ../lowsars:659
 msgid "Total score for %1 : %2"
 msgstr ""
 
-#: ../lowsars:653 ../lowsars:635 ../lowsars:661
+#: ../lowsars:653 ../lowsars:635 ../lowsars:661 ../lowsars:665
 msgid "Judging ended at: "
 msgstr ""
