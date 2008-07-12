@@ -9,15 +9,16 @@
 <li>Want to participate in development? Please <a href="about.html">contact us</a>.  想要参加开发吗？请<a href="about.html">联系我们</a>。</li>
 <h2>Roadmap 路线图</h2>
 <p>NOCOW 上的更多信息: <a href="http://www.nocow.cn/index.php/LowSars/%E5%BC%80%E5%8F%91%E8%BF%9B%E5%BA%A6">LowSars/开发进度</a></p>
-<h3>Road to 0.2.1</h3>
+<h3>Road to 0.2.2</h3>
 <ul>
-  <li>Write more help. 写更多的帮助。</li>
+  <li>Write help more easy to understand. 写更容易看懂的帮助。</li>
   <li>More information in summary/.csv files. 在总结/.csv文件中添加更多信息。</li>
   <li>Fix the bugs. 修复错误。</li>
 </ul>
 <h3>Road to 0.3</h3>
 <ul>
    <li>Change the language and rewrite? 更换语言和重写？</li>
+   <li><mo>make</mo>?</li>
    <li>Make the full use of lowsars-test in lowsars. 在lowsars中充分利用lowsars-test。</li>
    <li>And more... 更多……</li>
 </ul>

@@ -1,0 +1,11 @@
+ <div id=content>
+<h2>0.2.1 for GNU/Linux</h2>
+<ul>
+  <li>源代码 Source .tar.gz: <a href="lowsars-0.2.1.tar.gz">lowsars-0.2.1.tar.gz</a></li>
+  <li>deb package without bash for all platforms: 所有平台通用的不带bash的deb包：<a href="lowsars-0.2.1.deb">lowsars-0.2.1.deb</a></li>
+  <li>源代码 Source rpm: <a href="lowsars-0.2.1-0.src.rpm">lowsars-0.2.1-0.src.rpm</a></li>
+  <li>rpm package without bash for all platforms: 所有平台通用的不带bash的rpm包：<a href="lowsars-0.2.1-0.noarch.rpm">lowsars-0.2.1-0.noarch.rpm</a></li>
+  <li>rpm package with bash for i586: i586平台的带bash的rpm包：<a href="lowsars-0.2.1-0withbash.i586.rpm">lowsars-0.2.1-0withbash.i586.rpm</a></li>
+</ul>
+
+ </div>
