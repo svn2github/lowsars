@@ -1,4 +1,4 @@
- <div id=content>
+ <div id="content">
 <h2>Accessing SVN &nbsp;访问 SVN</h2>
 <ul><li>Lowsars uses Subversion (SVN) version control system. You can get the latest development version from SVN. Lowsars使用Subversion (SVN)作为版本控制工具。你可以通过访问SVN来跟踪最新的开发进程。</li>
 <li style="color:maroon">Note: SVN version might be unstable, sometimes even doesn't work at all! 注意：SVN版本可能不稳定，有时甚至无法工作！</li>

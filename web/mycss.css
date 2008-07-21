@@ -5,7 +5,7 @@ a:hover {text-decoration:underline overline}
 img.pic {height:250px; width:355px; border:solid 2px blue }
 p.pic {text-align:center; }
 #header {font-size:36pt; line-height:1.4em; color:navy;padding-left:0.1em }
-#subtitle { text-align:right; font-size:9pt; margin-right:0.5em }
+#sub_title { text-align:right; font-size:9pt; margin-right:0.5em }
 #navbar {background-color: lavender; width:20%; float:left; clear:left}
 #sflogo {font-size:8pt; background-color: white}
 #navbar li { font-size:12pt; display:block; margin-bottom:0.8em; text-align:right; margin-right:2em }

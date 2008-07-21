@@ -1,5 +1,5 @@
- <div id=content>
-<ul><li/>Lowsars is released under GPL version 2 or (at your opinion) any later versions. Lowsars  在 GPL 协议第二版或者(你认为合适的)任何更新的版本下发布。</ul>
+<div id="content">
+<ul><li>Lowsars is released under GPL version 2 or (at your opinion) any later versions. Lowsars  在 GPL 协议第二版或者(你认为合适的)任何更新的版本下发布。</li></ul>
 <h2>Developers 开发者</h2>
 <p>Please feel free to contact us if you have any questions / bug reports / wishes! 如果您有任何问题/错误报告/功能请求，欢迎联系我们！</p>
 <p>Also, don't hesitate to join us for development if you want! 另外，如果您想参与开发，请不要犹豫！</p>
@@ -23,6 +23,6 @@
 <ul><li>Ai.Freedom
 <ul><li>Space for mirror site. 提供镜像的空间。</li>
 <li>Blog: <a href="http://aifreedom.com">Ai.Freedom</a></li>
-<li>Email: <img src="http://aifreedom.com/email.png"/></li></ul>
+<li>Email: <img src="http://aifreedom.com/email.png" alt="ai.freedom" /></li></ul>
 </li></ul>
 </div>

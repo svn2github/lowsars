@@ -1,4 +1,4 @@
- <div id=content>
+ <div id="content">
 <p>Hello. This is Lowsars project homepage.<br />
 大家好，这里是 Lowsars 项目主页。
 </p>
@@ -9,7 +9,10 @@
 <p>Lowsars 由 bash 和 xslt 写成，主要在GNU/Linux系统上运行。</p>
 <h2>News 新闻</h2>
 <ul>
-<li>[2008-07-12] Lowsars 0.2.1 releaseed! Get it from <a href="download.html">here</a> now! Lowsars 0.2.1 发布了！马上从<a href="download.html">这里</a>下载！</li>
+<li>[2008-07-12] Lowsars 0.2.1 releaseed! Get it from <a href="download.html">here</a> now! Lowsars 0.2.1 发布了！马上从<a href="download.html">这里</a>下载！
+<ul><li>Fixed many annoying bugs. 修补了许多烦人的错误。</li>
+</ul>
+</li>
 <li>[2008-04-28] Lowsars 0.2.0 releaseed! Get it from <a href="download.html">here</a> now! Lowsars 0.2.0 发布了！马上从<a href="download.html">这里</a>下载！</li>
 <li>[2008-04-26] Lowsars 0.2.0 has been tagged, all code are frozen. It won't be long before publish. The only remaining work is to write the <a href="help.html">Help</a> page. Lowsars 0.2.0 已经标记。所有代码均已固定。距离发布不远了。唯一剩下的工作是书写<a href="help.html">帮助页面</a>。</li>
 <li>[2008-04-22] Lowsars 0.2.0 will be out before May 1, 2008. Keep your attention here! Lowsars 0.2.0 将会在2008年5月1日之前与大家见面，请继续关注！</li>
