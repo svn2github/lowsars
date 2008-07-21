@@ -1,14 +1,19 @@
 body {margin:10px;}
 a {color: navy; text-decoration:none;}
-a:visited {color: 777788}
+a:visited {color: #777788}
 a:hover {text-decoration:underline overline}
+span.mono {font-family:monospace; font-weight: bold}
+span.notice {font-weight: bold;color:red}
 img.pic {height:250px; width:355px; border:solid 2px blue }
 p.pic {text-align:center; }
 #header {font-size:36pt; line-height:1.4em; color:navy;padding-left:0.1em }
 #sub_title { text-align:right; font-size:9pt; margin-right:0.5em }
-#navbar {background-color: lavender; width:20%; float:left; clear:left}
-#sflogo {font-size:8pt; background-color: white}
-#navbar li { font-size:12pt; display:block; margin-bottom:0.8em; text-align:right; margin-right:2em }
+#navbar {background-color: #E6E6F9; width:20%; float:left; clear:left}
+#sflogo {font-size:8pt; background-color: white;} 
+#sflogo img {border: none} 
+#w3c_logos {background-color: white}
+#w3c_logos img { height:31px; width:88px; border:none }
+#navbar li { font-size:12pt; display:block; margin-bottom:1.3em; text-align:right; margin-right:2em }
 #navbar, #content {vertical-align:top;}
 h2 {font:normal 14pt serif; margin-top:1em; margin-bottom:1em; color:#403080 }
 h3 {font:bold 11pt sans-serif; margin:0.4em 1em 0em 0em; margin-bottom:0.4em; color:#403080 }
@@ -16,9 +21,8 @@ h3 {font:bold 11pt sans-serif; margin:0.4em 1em 0em 0em; margin-bottom:0.4em; co
 #content p {margin:0.5em 0.5em}
 #content a {background-color: #F3F3FF}
 #content li {margin:0.5em 0em}
-#content mo {font-family:monospace; font-weight: bold} 
 #content pre {font-family:monospace; background-color: #E0E0E0; margin-left:1em; padding-left:1em}
 #content ul {padding: 0em 1.5em}
-#index { font:normal 9pt sans-serif; background-color:#EEEEFF; width:55%; margin-left:8%; padding-left:1em }
+#index { font:normal 9pt sans-serif; background-color:#EEEEFF; width:58%; margin-left:6%;}
 #index a {background-color: #EEEEFF}
 #footer {font-size:8pt; color:gray; line-height:1.5em;padding-top:1em; clear:both}

@@ -2,29 +2,31 @@
 <h2>Lowsars</h2>
 <h3>0.2.1</h3>
 <ul><li>Source code, RPM package, Source RPM and DEB package for GNU/Linux: GNU/Linux使用的源代码，RPM包，RPM源码包，DEB包：
-<ul>There is also an RPM with bash for use with i586. Use them <strong>if and only if</strong> the standard version(without bash) doesn't work. 这里也有供i586架构使用的带有bash的RPM包。除非标准版本(不含bash)无法运行，否则请<strong>不要</strong>使用。</ul>
-<ul>
-<li><a href="http://sourceforge.net/project/showfiles.php?group_id=206504&package_id=247040&release_id=612812">Download from Sourceforge 从Sourceforge上下载</a></li>
+<ul><li>There is also an RPM with bash for use with i586. Use them <strong>if and only if</strong> the standard version(without bash) doesn't work. 这里也有供i586架构使用的带有bash的RPM包。除非标准版本(不含bash)无法运行，否则请<strong>不要</strong>使用。
+</li>
+<li><a href="http://sourceforge.net/project/showfiles.php?group_id=206504&amp;package_id=247040&amp;release_id=612812">Download from Sourceforge 从Sourceforge上下载</a></li>
 <li><a href="http://lowsars.aifreedom.com/afdownload.html">Download from Ai.Freedom mirror. 从 Ai.Freedom 镜像上下载</a> Many thanks to Ai.freedom for space for mirror site! 非常感谢 Ai.freedom 提供镜像空间！</li>
 </ul>
 </li></ul>
 <h3>0.2.0</h3>
-<ul><shax style="color:red">Not recommended. 不推荐使用</shax>
-<li>Source code, RPM package, Source RPM and DEB package for GNU/Linux: GNU/Linux使用的源代码，RPM包，RPM源码包，DEB包：
-<ul>There is also some RPMs with bash. Use them <strong>if and only if</strong> the standard version(without bash) doesn't work. 这里也有带有bash的RPM包。除非标准版本(不含bash)无法运行，否则请<strong>不要</strong>使用。</ul>
+<span class="notice">Not recommended. 不推荐使用</span>
 <ul>
-<li><a href="http://sourceforge.net/project/showfiles.php?group_id=206504&package_id=247040&release_id=595206">Download from Sourceforge 从Sourceforge上下载</a></li>
+<li>Source code, RPM package, Source RPM and DEB package for GNU/Linux: GNU/Linux使用的源代码，RPM包，RPM源码包，DEB包：
+<ul><li>There is also some RPMs with bash. Use them <strong>if and only if</strong> the standard version(without bash) doesn't work. 这里也有带有bash的RPM包。除非标准版本(不含bash)无法运行，否则请<strong>不要</strong>使用。</li></ul>
+<ul>
+<li><a href="http://sourceforge.net/project/showfiles.php?group_id=206504&amp;package_id=247040&amp;release_id=595206">Download from Sourceforge 从Sourceforge上下载</a></li>
 <li><a href="http://lowsars.googlepages.com/gpdownload.html">Download from Googlepages mirror. 从Googlepages镜像上下载</a></li>
 </ul>
 </li></ul>
 <h3>0.1.2</h3>
-<ul><shax style="color:red">Not recommended. 不推荐使用</shax>
+<span class="notice">Not recommended. 不推荐使用</span>
+<ul>
 <li>Source code for GNU/Linux: GNU/Linux使用的源代码：
 <ul><li>
-<a href="https://sourceforge.net/project/showfiles.php?group_id=206504&package_id=247040&release_id=542754">Download from Sourceforge 从Sourceforge上下载</a></li></ul>
+<a href="https://sourceforge.net/project/showfiles.php?group_id=206504&amp;package_id=247040&amp;release_id=542754">Download from Sourceforge 从Sourceforge上下载</a></li></ul>
 </li></ul>
 <h2>Bash</h2>
 <p>If you have experienced errors on using Lowsars, please try to install the official bash from GNU. 如果你使用Lowsars的时候碰到了错误，请尝试安装GNU官方的bash。</p>
-<ul><a href="http://www.gnu.org/software/bash">Link to GNU bash</a></ul>
+<a href="http://www.gnu.org/software/bash">Link to GNU bash</a>
 </div>
 

@@ -3,7 +3,7 @@
 Frequently Asked Questions 常见问题与解答
 </p>
 <ul><li>I use Mandriva(or another distro), and Lowsars doesn't work on it! It is full of errors! 我使用Mandriva(或其他发行版)，Lowsars无法工作！它全是错误！
-<ul><li>This is because Mandriva disabled the bash keyword <mo>time</mo>, and Lowsars needs it to work. To solve this problem, install a <mo>bash</mo> from <a href="download.html">Download page</a> to your system.&nbsp;&nbsp; 这是因为Mandriva禁用了bash内关键字<mo>time</mo>，Lowsars依靠它工作。解决方法是从<a href="download.html">下载页</a>安装一个<mo>bash</mo> 到你的系统上。</li></ul>
+<ul><li>This is because Mandriva disabled the bash keyword <span class="mono">time</span>, and Lowsars needs it to work. To solve this problem, install a <span class="mono">bash</span> from <a href="download.html">Download page</a> to your system.&nbsp;&nbsp; 这是因为Mandriva禁用了bash内关键字<span class="mono">time</span>，Lowsars依靠它工作。解决方法是从<a href="download.html">下载页</a>安装一个<span class="mono">bash</span> 到你的系统上。</li></ul>
 </li>
 <li>Which programming language is Lowsars using? Lowsars使用的是什么语言？
 <ul><li>Bash and XSLT. XSLT is only for Cena configuration file conversion.  Bash 和 XSLT。XSLT仅用来转换Cena格式的配置文件。</li></ul></li>

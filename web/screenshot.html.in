@@ -1,12 +1,19 @@
  <div id="content">
 <ul><li>Sorry, but Lowsars now is only a CLI(Command Line Interface) program, which has no pretty pictures to put here. 对不起，Lowsars 现在还只有CLI(命令行界面)，没有漂亮的截图放在这里。</li></ul>
 
-<ul><li>But I will give you some ideas of how it works in the terminal...但是我将会告诉你它怎样在终端里面工作……</li></ul>
+<ul><li>But I will give you some ideas of how it works in the terminal...但是我将会告诉你它怎样在终端里面工作……</li>
 
-<ul><li>Start working(English)... </li></ul>
-<p class="pic"><a href="images/lowsars-en-1.png"><img src="images/lowsars-en-1.png" class="pic"></a></p>
-<ul><li>开始工作(中文)……</li></ul>
-<p class="pic"><a href="images/lowsars-zh-1.png"><img src="images/lowsars-zh-1.png" class="pic"></a></p>
-<ul><li>Give the summary... 给出总结……</li></ul>
-<p class="pic"><a href="images/lowsars-summary.png"><img src="images/lowsars-summary.png" class="pic"></a></p>
+<li>Start working(English)... 
+   <p class="pic"><a href="images/lowsars-en-1.png">
+      <img src="images/lowsars-en-1.png" class="pic" alt="working in English"/>
+   </a></p></li>
+<li>开始工作(中文)……
+   <p class="pic"><a href="images/lowsars-zh-1.png">
+      <img src="images/lowsars-zh-1.png" class="pic" alt="在中文环境下工作"/>
+   </a></p></li>
+<li>Giving the summary... 给出总结……
+   <p class="pic"><a href="images/lowsars-summary.png">
+      <img src="images/lowsars-summary.png" class="pic" alt="Giving the summary/给出总结"/>
+   </a></p></li>
+</ul>
 </div>
