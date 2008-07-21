@@ -53,8 +53,8 @@
 <li>You can name it whatever you like, but something like <span class="mono">contest.lsc</span> is recommended. .lsc means LowSars Contest file.  这个文件可以叫做任何名称，但是建议叫做类似<span class="mono">contest.lsc</span>的名称。.lsc的意思是LowSars Contest文件。</li>
 <li>You can write it in any text editor you like: vim, emacs, gedit, kate... 你可以使用任何你喜欢的文本编辑器来写比赛文件：vim, emacs, gedit, kate……</li>
 <li>
-If you already had Cena contest file, you just need to convert it with <a href="three-five-O"><span class="mono">lowsars-cena</span></a>, instead of writing again.</li>
-<li>如果你有Cena比赛文件，你可以使用<a href="three-five-O"><span class="mono">lowsars-cena</span></a>把它转换成Lowsars比赛文件，而不用再次手写。</li></ul>
+If you already had Cena contest file, you just need to convert it with <a href="#three-five-O"><span class="mono">lowsars-cena</span></a>, instead of writing again.</li>
+<li>如果你有Cena比赛文件，你可以使用<a href="#three-five-O"><span class="mono">lowsars-cena</span></a>把它转换成Lowsars比赛文件，而不用再次手写。</li></ul>
 <a name="three-one-Be"></a>
 <h3>3.1 Simple Example 简单的例子</h3>
 <ul>
