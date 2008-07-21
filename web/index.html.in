@@ -9,6 +9,7 @@
 <p>Lowsars 由 bash 和 xslt 写成，主要在GNU/Linux系统上运行。</p>
 <h2>News 新闻</h2>
 <ul>
+<li>[2008-07-21] Source of the webpages are modified according to the standards. Now this website is valid for W3C XHTML 1.0. 网页代码按照标准进行了修改。现在网站符合W3C XHTML 1.0 标准。</li>
 <li>[2008-07-12] Lowsars 0.2.1 releaseed! Get it from <a href="download.html">here</a> now! Lowsars 0.2.1 发布了！马上从<a href="download.html">这里</a>下载！
 <ul><li>Fixed many annoying bugs. 修补了许多烦人的错误。</li>
 </ul>
