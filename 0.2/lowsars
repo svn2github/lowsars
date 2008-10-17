@@ -666,7 +666,7 @@ makesummary "	" 1>$summary
 makesummary "," 1>$summarycsv
 echo "Starting sort..." >&3
 probid=0
-for prob in $probnamels; do
+for prob in $fullprobls; do
    x=$((probid++))
    {
       read aaa
