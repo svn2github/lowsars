@@ -183,7 +183,7 @@ maketable(){
 	       while true; do
 	          read xnum xtime xscore xstatus
 	          if [ "$xnum" = "Total" ]; then
-		     p="$xscore"
+		     p="$xtime"
 	             break
 	          elif [ "$xnum" = "" ]; then
 	             break

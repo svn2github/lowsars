@@ -7,6 +7,7 @@ uninstalllocales=$(addprefix uninstall-locale-,$(locales))
 all : $(mofiles)
 lowsars.pot : $(shfiles)
 	xgettext $(shfiles) -j -L Shell -o lowsars.pot
+	xgettext $(shfiles) --no-location -j -L Shell -o lowsars.pot
 $(pofiles) : lowsars.pot
 	msgmerge $@ lowsars.pot -o $@
 %.mo : %.po

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lowsars\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-10-18 20:36+0800\n"
+"POT-Creation-Date: 2008-10-18 21:53+0800\n"
 "PO-Revision-Date: 2008-04-17 21:08+0800\n"
 "Last-Translator: Liu Sizhuang <chinatslsz@hotmail.com>\n"
 "Language-Team: Simplified Chinese <zh@li.org>\n"
@@ -15,146 +15,110 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../lowsars:87
 msgid "Accepted"
 msgstr "正确"
 
-#: ../lowsars:88
 msgid "Wrong Answer"
 msgstr "答案错误"
 
-#: ../lowsars:89
 msgid "Compile Error"
 msgstr "编译错误"
 
-#: ../lowsars:90
 msgid "Source Not Found"
 msgstr "未找到源文件"
 
-#: ../lowsars:91
 msgid "Time Limit Exceeded"
 msgstr "超出时间限制"
 
-#: ../lowsars:92
 msgid "Memory Limit Exceeded"
 msgstr "超出内存限制"
 
-#: ../lowsars:93
 msgid "Output Limit Exceeded"
 msgstr "超出输出限制"
 
-#: ../lowsars:94
 msgid "Extra Point"
 msgstr "额外分数"
 
-#: ../lowsars:95
 msgid "Bonus!"
 msgstr "额外奖励！"
 
-#: ../lowsars:96
 msgid "Compiled Successfully"
 msgstr "编译成功"
 
-#: ../lowsars:97
 msgid "Running Successfully"
 msgstr "运行成功"
 
-#: ../lowsars:98
 msgid "Partial Point"
 msgstr "部分分数"
 
-#: ../lowsars:99
 msgid "Presentation Error"
 msgstr "表达错误"
 
-#: ../lowsars:100
 msgid "Excutable Not Found"
 msgstr "可执行文件未找到"
 
-#: ../lowsars:101
 msgid "No permission"
 msgstr "没有权限"
 
-#: ../lowsars:102
 msgid "Unknown run error"
 msgstr "未知运行错误"
 
-#: ../lowsars:107
 msgid "Runtime Error %1"
 msgstr "运行错误 %1"
 
-#: ../lowsars:132 ../lowsars:168
 msgid "Name"
 msgstr "选手名"
 
-#: ../lowsars:136 ../lowsars:172
 msgid "Total"
 msgstr "总分"
 
-#: ../lowsars:253
 msgid "No such parameter:"
 msgstr "没有这样的参数:"
 
-#: ../lowsars:264
 msgid "Parameter not used: "
 msgstr "没有使用的参数: "
 
-#: ../lowsars:270
 msgid "File not found: "
 msgstr "文件未找到: "
 
-#: ../lowsars:271
 msgid "No input file specified. "
 msgstr "没有指定输入文件"
 
-#: ../lowsars:278
 msgid "Lightweight OI Wonderful Scoring And Ranking System"
 msgstr "轻量级OI奇妙的评测系统"
 
-#: ../lowsars:415
 msgid "No such command in config file:"
 msgstr "配置文件中没有此命令:"
 
-#: ../lowsars:534
 msgid "Start testing %1..."
 msgstr "开始测试 %1"
 
-#: ../lowsars:549
 msgid "Not to test %1"
 msgstr "不测试 %1"
 
-#: ../lowsars:563
 msgid "Compiling %1 ..."
 msgstr "正在编译 %1 ..."
 
-#: ../lowsars:570
 msgid "Success"
 msgstr "成功"
 
-#: ../lowsars:582
 msgid "Not to compile."
 msgstr "不编译"
 
-#: ../lowsars:594
 msgid "Testing "
 msgstr "正在测试 "
 
-#: ../lowsars:657
 msgid "Unknown Tester Error"
 msgstr "未知评测器错误"
 
-#: ../lowsars:675
 msgid "s"
 msgstr "秒"
 
-#: ../lowsars:675
 msgid "Score: "
 msgstr "得分: "
 
-#: ../lowsars:683 ../lowsars:693
 msgid "Total score for %1 : %2"
 msgstr "%1 的总分: %2"
 
-#: ../lowsars:699
 msgid "Judging ended at: "
 msgstr "评测结束时间: "
