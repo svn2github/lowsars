@@ -163,6 +163,42 @@ makesummary(){
       echo "$1$t"
    done
 }
+maketable(){
+# Make Cena-like table result, use $1 as the seperator, output to &1
+   echo -n "`gettext "Name"`"
+   for probid in $fullprobls; do
+      echo -n "$1${probname[probid]}"
+   done
+   echo "$1`gettext "Total"`"
+   for ct in $fullctls; do
+      echo -n "$ct"
+      t=0
+      for probid in $fullprobls; do
+	 prob="${probname[probid]}"
+	 p=0
+	 echo -n "$1"
+	 #echo "$uniform/$ct/$prob" >&2
+	 if [ -f "$uniform/$ct/$prob" ]; then
+	    {
+	       while true; do
+	          read xnum xtime xscore xstatus
+	          if [ "$xnum" = "Total" ]; then
+		     p="$xscore"
+	             break
+	          elif [ "$xnum" = "" ]; then
+	             break
+	          fi
+		  #TODO should be more carefully-designed: Source not found: X maybe?
+	          echo -n "${xstatus:0:1}"
+		  read x
+	       done
+	    } < "$uniform/$ct/$prob"
+	 fi
+	 t=$((t+p))
+      done
+      echo "$1$t"
+   done
+}
 maxcsgp=100
 maxprob=100
 isctls=0
@@ -181,6 +217,8 @@ uniform=result/result.uniform
 friendly=result/result.friendly
 summary=result/result.summary
 summarycsv=result/result.summary.csv
+table=result/result.table
+tablecsv=result/result.table.csv
 sorted=result/result.sorted
 sortedcsv=result/result.sorted.csv
 notdone=result/lowsars.notdone
@@ -664,6 +702,8 @@ date | tee -a $friendly
 echo "producing summary..." >&3
 makesummary "	" 1>$summary
 makesummary "," 1>$summarycsv
+maketable "	" 1>$table
+maketable "," 1>$tablecsv
 echo "Starting sort..." >&3
 probid=0
 for prob in $fullprobls; do
